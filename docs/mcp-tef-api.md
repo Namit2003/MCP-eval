@@ -126,13 +126,13 @@ Unexpected errors return 500 with `"error": "InternalServerError"`.
 
 - **Token usage**: not recorded or returned. Pydantic AI has it internally;
   mcp-tef discards it.
-- **Retry count**: not recorded or returned. Only `max_retries` is passed to
-  the LLM client. Retries appear as text in `llm_response_raw`.
+- **Retry count**: not recorded or returned. `max_retries` (and `timeout`) are
+  stored but never used by the LLM client. Tool-call retries appear as text in
+  `llm_response_raw`.
 - **Reasoning / recommendations per run**: no endpoint. tefrun shows
   `parameter_justification` and `llm_response_raw` instead.
 
-Plan: add token usage and retry count in a fork of mcp-tef, and read them
-when present.
+tefrun uses stock mcp-tef and does not report token usage or retries.
 
 ## Spec drift
 

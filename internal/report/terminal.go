@@ -86,7 +86,6 @@ func (t *Terminal) Results(results []runner.Result, summaries []ModelSummary) {
 		fmt.Fprintf(t.w, "%s %.1f%%  completed %d  failed %d  TP %d  FP %d  TN %d  FN %d\n",
 			t.bold.Render("Pass rate"), s.PassRate*100, s.Completed, s.Failed, s.TP, s.FP, s.TN, s.FN)
 		fmt.Fprintf(t.w, "Latency  exec %s  wall %s\n", latencyText(s.ExecutionTime), latencyText(s.WallClock))
-		fmt.Fprintln(t.w, "Tokens n/a  Retries n/a")
 	}
 }
 

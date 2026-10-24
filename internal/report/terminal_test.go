@@ -60,7 +60,6 @@ func TestTerminalResults(t *testing.T) {
 		"Latency  exec avg 200ms p50 100ms p95 300ms  wall avg 250ms p50 150ms p95 350ms",
 		"Pass rate 0.0%  completed 0  failed 1",
 		"Latency  exec n/a  wall n/a",
-		"Tokens n/a  Retries n/a",
 	} {
 		if !strings.Contains(out, want) {
 			t.Errorf("output missing %q:\n%s", want, out)

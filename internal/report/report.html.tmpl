@@ -63,8 +63,6 @@
       <dl>
         <dt>Jobs</dt><dd>{{.Total}} · {{.Completed}} completed · {{.Failed}} failed</dd>
         <dt>Classes</dt><dd>TP {{.TP}} · FP {{.FP}} · TN {{.TN}} · FN {{.FN}}</dd>
-        <dt>Tokens</dt><dd>n/a</dd>
-        <dt>Retries</dt><dd>n/a</dd>
       </dl>
       <table class="lat">
         <tr><th></th><th>avg</th><th>p50</th><th>p95</th></tr>
@@ -101,7 +99,7 @@
       <tr class="details" hidden><td colspan="8">
           <p class="kv">
             LLM confidence: {{or .LLMConfidence "-"}} · Confidence score: {{or .ConfidenceScore "-"}} ·
-            Avg parameter correctness: {{score .AvgParameterCorrectness}} · Tokens: n/a · Retries: n/a<br>
+            Avg parameter correctness: {{score .AvgParameterCorrectness}}<br>
             Test case <code>{{or .TestCaseID "-"}}</code> · Test run <code>{{or .TestRunID "-"}}</code>
           </p>
           {{if .ToolCallMatches}}
