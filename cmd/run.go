@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"path/filepath"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -67,7 +68,13 @@ func newRunCmd() *cobra.Command {
 			if err := teff.Setup(cmd.Context(), mcpTefRepo, f.mcpTefDir, f.mcpTefRef); err != nil {
 				return err
 			}
-			// Starting mcp-tef and executing jobs arrive in later phases.
+			srv, err := teff.Start(f.mcpTefDir, f.port, filepath.Join(f.out, "mcp-tef.log"))
+			if err != nil {
+				return err
+			}
+			defer srv.Stop()
+			fmt.Fprintf(cmd.OutOrStdout(), "mcp-tef healthy at %s\n", srv.URL)
+			// Executing jobs arrives in later phases.
 			return errors.New("run: executing evals is not implemented yet")
 		},
 	}
