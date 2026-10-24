@@ -6,7 +6,11 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+
+	"github.com/Namit2003/mcp-eval/internal/teff"
 )
+
+const mcpTefRepo = "https://github.com/StacklokLabs/mcp-tef.git"
 
 type runFlags struct {
 	inputFlags
@@ -60,6 +64,9 @@ func newRunCmd() *cobra.Command {
 				return err
 			}
 			printSummary(cmd.OutOrStdout(), loaded)
+			if err := teff.Setup(cmd.Context(), mcpTefRepo, f.mcpTefDir, f.mcpTefRef); err != nil {
+				return err
+			}
 			// Starting mcp-tef and executing jobs arrive in later phases.
 			return errors.New("run: executing evals is not implemented yet")
 		},
