@@ -1,6 +1,7 @@
 package report
 
 import (
+	"reflect"
 	"testing"
 	"time"
 
@@ -30,8 +31,8 @@ func TestSummarize(t *testing.T) {
 	want := []ModelSummary{
 		{
 			Model: "a", Total: 4, Completed: 3, Failed: 1, TP: 2, FN: 1, PassRate: 0.5,
-			ExecutionTime: Latency{Avg: 200 * ms, P50: 200 * ms, P95: 300 * ms, Total: 600 * ms},
-			WallClock:     Latency{Avg: 250 * ms, P50: 250 * ms, P95: 350 * ms, Total: 750 * ms},
+			ExecutionTime: &Latency{Avg: 200 * ms, P50: 200 * ms, P95: 300 * ms, Total: 600 * ms},
+			WallClock:     &Latency{Avg: 250 * ms, P50: 250 * ms, P95: 350 * ms, Total: 750 * ms},
 		},
 		{Model: "b", Total: 2, Failed: 2},
 	}
@@ -39,7 +40,7 @@ func TestSummarize(t *testing.T) {
 		t.Fatalf("got %d summaries, want %d", len(got), len(want))
 	}
 	for i := range want {
-		if got[i] != want[i] {
+		if !reflect.DeepEqual(got[i], want[i]) {
 			t.Errorf("summary %d:\n got %+v\nwant %+v", i, got[i], want[i])
 		}
 	}

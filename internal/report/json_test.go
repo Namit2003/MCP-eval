@@ -14,6 +14,7 @@ func TestWriteJSON(t *testing.T) {
 	results := []runner.Result{
 		completed("a", "TP", 100, 1500*ms),
 		failed("a", 2*time.Second),
+		failed("b", time.Second),
 	}
 	meta := Metadata{
 		Timestamp:    time.Date(2026, 10, 24, 12, 0, 0, 0, time.UTC),
@@ -48,6 +49,9 @@ func TestWriteJSON(t *testing.T) {
 	}
 	if exec := s["execution_time"].(map[string]any); exec["p95_ms"] != 100.0 || exec["total_ms"] != 100.0 {
 		t.Errorf("execution_time: %v", exec)
+	}
+	if b := got.Summaries[1]; b["execution_time"] != nil || b["wall_clock"] != nil {
+		t.Errorf("model with no completed jobs should have null latency: %v", b)
 	}
 	ok, bad := got.Jobs[0], got.Jobs[1]
 	if ok["wall_clock_ms"] != 1500.0 || ok["execution_time_ms"] != 100.0 || ok["classification"] != "TP" {

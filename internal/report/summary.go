@@ -9,21 +9,21 @@ import (
 
 // ModelSummary aggregates one model's results.
 type ModelSummary struct {
-	Model         string  `json:"model"`
-	Total         int     `json:"total"`
-	Completed     int     `json:"completed"`
-	Failed        int     `json:"failed"`
-	TP            int     `json:"tp"`
-	FP            int     `json:"fp"`
-	TN            int     `json:"tn"`
-	FN            int     `json:"fn"`
-	PassRate      float64 `json:"pass_rate"`      // TP / Total; failed jobs count in Total
-	ExecutionTime Latency `json:"execution_time"` // from mcp-tef's execution_time_ms
-	WallClock     Latency `json:"wall_clock"`     // measured by tefrun
+	Model         string   `json:"model"`
+	Total         int      `json:"total"`
+	Completed     int      `json:"completed"`
+	Failed        int      `json:"failed"`
+	TP            int      `json:"tp"`
+	FP            int      `json:"fp"`
+	TN            int      `json:"tn"`
+	FN            int      `json:"fn"`
+	PassRate      float64  `json:"pass_rate"`      // TP / Total; failed jobs count in Total
+	ExecutionTime *Latency `json:"execution_time"` // from mcp-tef's execution_time_ms
+	WallClock     *Latency `json:"wall_clock"`     // measured by tefrun
 }
 
-// Latency statistics over a model's completed jobs. All zero when the model
-// has no completed jobs.
+// Latency statistics over a model's completed jobs. A nil *Latency means
+// there were no measurements.
 type Latency struct {
 	Avg, P50, P95, Total time.Duration
 }
@@ -74,16 +74,16 @@ func Summarize(results []runner.Result) []ModelSummary {
 	return summaries
 }
 
-func latency(ds []time.Duration) Latency {
+func latency(ds []time.Duration) *Latency {
 	if len(ds) == 0 {
-		return Latency{}
+		return nil
 	}
 	sorted := slices.Sorted(slices.Values(ds))
 	var total time.Duration
 	for _, d := range sorted {
 		total += d
 	}
-	return Latency{
+	return &Latency{
 		Avg:   total / time.Duration(len(sorted)),
 		P50:   percentile(sorted, 50),
 		P95:   percentile(sorted, 95),
