@@ -1,0 +1,29 @@
+{
+  "test_cases": [
+    {
+      "name": "Search repos",
+      "query": "Find repositories related to MCP tools",
+      "expected_tool_calls": [
+        { "mcp_server_url": "http://localhost:8080/github/mcp", "tool_name": "search_repositories", "parameters": { "query": "MCP tools" } }
+      ],
+      "order_dependent_matching": false,
+      "available_mcp_servers": ["http://localhost:8080/github/mcp"]
+    },
+    {
+      "name": "Search code",
+      "query": "Find code that calls errgroup.WithContext in Go repositories",
+      "expected_tool_calls": [
+        { "mcp_server_url": "http://localhost:8080/github/mcp", "tool_name": "search_code", "parameters": { "query": "errgroup.WithContext language:go" } }
+      ],
+      "order_dependent_matching": false,
+      "available_mcp_servers": ["http://localhost:8080/github/mcp"]
+    },
+    {
+      "name": "No tool needed",
+      "query": "What does the acronym MCP stand for?",
+      "expected_tool_calls": [],
+      "order_dependent_matching": false,
+      "available_mcp_servers": ["http://localhost:8080/github/mcp"]
+    }
+  ]
+}

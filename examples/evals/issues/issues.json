@@ -1,0 +1,22 @@
+{
+  "test_cases": [
+    {
+      "name": "Get issue",
+      "query": "Show me issue #42 in github/github-mcp-server",
+      "expected_tool_calls": [
+        { "mcp_server_url": "http://localhost:8080/github/mcp", "tool_name": "get_issue", "parameters": { "owner": "github", "repo": "github-mcp-server", "issue_number": 42 } }
+      ],
+      "order_dependent_matching": false,
+      "available_mcp_servers": ["http://localhost:8080/github/mcp"]
+    },
+    {
+      "name": "List open issues",
+      "query": "List the open issues in github/github-mcp-server",
+      "expected_tool_calls": [
+        { "mcp_server_url": "http://localhost:8080/github/mcp", "tool_name": "list_issues", "parameters": { "owner": "github", "repo": "github-mcp-server", "state": "OPEN" } }
+      ],
+      "order_dependent_matching": false,
+      "available_mcp_servers": ["http://localhost:8080/github/mcp"]
+    }
+  ]
+}

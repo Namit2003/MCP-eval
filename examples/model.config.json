@@ -1,0 +1,6 @@
+{
+  "models": [
+    { "provider": "openrouter", "model": "anthropic/claude-3.5-sonnet", "api_key_env": "OPENROUTER_API_KEY", "temperature": 0.4, "timeout": 30, "max_retries": 3 },
+    { "provider": "ollama", "model": "llama3.2:3b", "temperature": 0.4, "timeout": 60, "max_retries": 2 }
+  ]
+}
