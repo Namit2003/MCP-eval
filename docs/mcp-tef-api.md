@@ -34,8 +34,13 @@ Request body (`TestCaseCreate`), sent as written in the test file:
 | `available_mcp_servers` | array, min 1 | each item is a URL string or `{"url", "transport"}`; a string becomes `{"url": s, "transport": "streamable-http"}` |
 
 Creating a test case **contacts the MCP servers**: it checks that each server
-is reachable and that each expected tool exists on its server. If not, it
-fails with 422.
+is reachable and that each expected tool exists on its server:
+
+- Expected tool missing: 422 `ValidationError`, message `Expected tool not
+  found in MCP server`, `details` lists the server's `available_tools`.
+- Server unreachable: 500 `DatabaseError` (a misleading name), message
+  `Database error: Failed to create test case: ... Failed to connect to MCP
+  server at <url>`.
 
 Response `201`: the test case with `id` (UUID), the fields above,
 `created_at`, `updated_at`.
