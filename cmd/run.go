@@ -79,18 +79,15 @@ func newRunCmd() *cobra.Command {
 			}
 			defer srv.Stop()
 			fmt.Fprintf(cmd.OutOrStdout(), "mcp-tef healthy at %s\n", srv.URL)
+			term := report.NewTerminal(cmd.OutOrStdout())
 			results := runner.Run(cmd.Context(), teff.NewClient(srv.URL), loaded.suite, loaded.models.Models, runner.Options{
 				Parallel:     f.parallel,
 				Timeout:      f.timeout,
 				PollInterval: f.pollInterval,
+				OnDone:       term.Progress,
 			})
-			completed := 0
-			for _, r := range results {
-				if r.Status == "completed" {
-					completed++
-				}
-			}
-			fmt.Fprintf(cmd.OutOrStdout(), "%d jobs: %d completed, %d failed\n", len(results), completed, len(results)-completed)
+			summaries := report.Summarize(results)
+			term.Results(results, summaries)
 
 			flags := make(map[string]string)
 			cmd.Flags().VisitAll(func(fl *pflag.Flag) {
@@ -100,7 +97,7 @@ func newRunCmd() *cobra.Command {
 			})
 			meta := report.Metadata{Timestamp: started.UTC(), McpTefRef: f.mcpTefRef, McpTefCommit: commit, Flags: flags}
 			jsonPath := filepath.Join(f.out, "results.json")
-			if err := report.WriteJSON(jsonPath, meta, report.Summarize(results), results); err != nil {
+			if err := report.WriteJSON(jsonPath, meta, summaries, results); err != nil {
 				return err
 			}
 			fmt.Fprintf(cmd.OutOrStdout(), "wrote %s\n", jsonPath)

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"sync"
 	"time"
 
 	"golang.org/x/sync/errgroup"
@@ -19,6 +20,10 @@ type Options struct {
 	Parallel     int           // max jobs in flight across all models
 	Timeout      time.Duration // global deadline for the whole run
 	PollInterval time.Duration // how often to poll a test run's status
+
+	// OnDone, if set, is called after each job finishes with the number of
+	// jobs done so far and the total. Calls never overlap.
+	OnDone func(done, total int, r Result)
 }
 
 // Result is the outcome of one (test case × model) job.
@@ -52,6 +57,18 @@ func Run(ctx context.Context, client *teff.Client, suite *tests.Suite, models []
 	defer cancel()
 
 	n := suite.NumCases() * len(models)
+	var mu sync.Mutex
+	done := 0
+	finished := func(r Result) {
+		if opts.OnDone == nil {
+			return
+		}
+		mu.Lock()
+		defer mu.Unlock()
+		done++
+		opts.OnDone(done, n, r)
+	}
+
 	results := make([]Result, 0, n)
 	jobModels := make([]config.Model, 0, n) // jobModels[i] is the model for results[i]
 	for _, f := range suite.Files {
@@ -62,6 +79,7 @@ func Run(ctx context.Context, client *teff.Client, suite *tests.Suite, models []
 				if err != nil {
 					r.Status = "failed"
 					r.FailureReason = failureReason(ctx, fmt.Errorf("create test case: %w", err))
+					finished(r)
 				}
 				results = append(results, r)
 				jobModels = append(jobModels, m)
@@ -79,6 +97,7 @@ func Run(ctx context.Context, client *teff.Client, suite *tests.Suite, models []
 		g.Go(func() error {
 			// Each job writes only results[i], so no locking is needed.
 			runJob(ctx, client, &results[i], jobModels[i], opts.PollInterval)
+			finished(results[i])
 			return nil
 		})
 	}

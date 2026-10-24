@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -99,10 +98,21 @@ func TestHTTPError(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected an error")
 	}
-	for _, want := range []string{"POST /test-cases", "422", "MCP server not reachable"} {
-		if !strings.Contains(err.Error(), want) {
-			t.Errorf("error %q does not contain %q", err, want)
-		}
+	if want := "POST /test-cases: 422: MCP server not reachable"; err.Error() != want {
+		t.Errorf("got %q, want %q", err, want)
+	}
+}
+
+func TestHTTPErrorWithoutMessage(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		w.Write([]byte(`{"detail": [{"msg": "Field required"}]}`))
+	}))
+	defer srv.Close()
+
+	_, err := NewClient(srv.URL).CreateTestCase(context.Background(), json.RawMessage(`{}`))
+	if want := `POST /test-cases: 422: {"detail": [{"msg": "Field required"}]}`; err == nil || err.Error() != want {
+		t.Errorf("got %v, want %q", err, want)
 	}
 }
 

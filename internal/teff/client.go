@@ -154,8 +154,17 @@ func (c *Client) do(ctx context.Context, method, path string, body any, apiKey s
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != want {
-		msg, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
-		return fmt.Errorf("%s %s: %s: %s", method, path, resp.Status, bytes.TrimSpace(msg))
+		body, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
+		// mcp-tef errors carry a readable "message"; anything else (such
+		// as FastAPI's 422 {"detail": [...]}) is shown as is.
+		var e struct {
+			Message string `json:"message"`
+		}
+		msg := string(bytes.TrimSpace(body))
+		if json.Unmarshal(body, &e) == nil && e.Message != "" {
+			msg = e.Message
+		}
+		return fmt.Errorf("%s %s: %d: %s", method, path, resp.StatusCode, msg)
 	}
 	if err := json.NewDecoder(resp.Body).Decode(out); err != nil {
 		return fmt.Errorf("%s %s: decoding response: %w", method, path, err)

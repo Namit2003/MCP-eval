@@ -194,6 +194,22 @@ func TestRunCreateFails(t *testing.T) {
 	}
 }
 
+func TestRunOnDone(t *testing.T) {
+	f := &fakeTef{pollsToFinish: 2, failCreate: map[string]bool{"b": true}}
+	o := opts(2, 5*time.Second)
+	var calls []int
+	o.OnDone = func(done, total int, r Result) {
+		if total != 4 {
+			t.Errorf("total = %d, want 4", total)
+		}
+		calls = append(calls, done) // safe: calls never overlap
+	}
+	Run(context.Background(), newFakeTef(t, f), suiteOf("a", "b"), ollama, o)
+	if fmt.Sprint(calls) != "[1 2 3 4]" {
+		t.Errorf("OnDone done values = %v, want [1 2 3 4]", calls)
+	}
+}
+
 func TestRunMcpTefFailure(t *testing.T) {
 	f := &fakeTef{pollsToFinish: 1, runStatus: "failed"}
 	results := Run(context.Background(), newFakeTef(t, f), suiteOf("a"), ollama[:1], opts(1, 5*time.Second))
