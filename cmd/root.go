@@ -2,9 +2,12 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 
 	"github.com/spf13/cobra"
 
@@ -14,8 +17,12 @@ import (
 
 // Execute runs the CLI and returns the process exit code.
 func Execute() int {
+	// Ctrl+C and SIGTERM cancel the context instead of killing the process,
+	// so deferred cleanup such as stopping mcp-tef still runs.
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
 	root := newRootCmd()
-	if err := root.Execute(); err != nil {
+	if err := root.ExecuteContext(ctx); err != nil {
 		fmt.Fprintln(root.ErrOrStderr(), "error:", indent(err.Error()))
 		return 1
 	}

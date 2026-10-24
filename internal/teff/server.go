@@ -1,6 +1,7 @@
 package teff
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net"
@@ -30,7 +31,7 @@ type Server struct {
 
 // Start launches mcp-tef from dir on port, writes its output to logPath and
 // waits until it reports healthy. The caller must call Stop.
-func Start(dir string, port int, logPath string) (*Server, error) {
+func Start(ctx context.Context, dir string, port int, logPath string) (*Server, error) {
 	// Fail if something already answers on the port; otherwise the health
 	// check could pass against the wrong server.
 	ln, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", port))
@@ -40,14 +41,14 @@ func Start(dir string, port int, logPath string) (*Server, error) {
 	ln.Close()
 
 	s := &Server{URL: fmt.Sprintf("http://127.0.0.1:%d", port), done: make(chan struct{})}
-	if err := s.start(dir, port, logPath); err != nil {
+	if err := s.start(ctx, dir, port, logPath); err != nil {
 		s.Stop()
 		return nil, fmt.Errorf("mcp-tef failed to start (log: %s): %w", logPath, err)
 	}
 	return s, nil
 }
 
-func (s *Server) start(dir string, port int, logPath string) error {
+func (s *Server) start(ctx context.Context, dir string, port int, logPath string) error {
 	var err error
 	if s.dbDir, err = os.MkdirTemp("", "tefrun-db-"); err != nil {
 		return err
@@ -75,12 +76,12 @@ func (s *Server) start(dir string, port int, logPath string) error {
 		s.cmd.Wait()
 		close(s.done)
 	}()
-	return waitHealthy(s.URL+"/health", s.done, startupTimeout)
+	return waitHealthy(ctx, s.URL+"/health", s.done, startupTimeout)
 }
 
 // waitHealthy polls url until it returns 200, the process exits (done is
-// closed) or timeout passes.
-func waitHealthy(url string, done <-chan struct{}, timeout time.Duration) error {
+// closed), ctx is cancelled or timeout passes.
+func waitHealthy(ctx context.Context, url string, done <-chan struct{}, timeout time.Duration) error {
 	client := &http.Client{Timeout: time.Second}
 	deadline := time.After(timeout)
 	tick := time.NewTicker(healthInterval)
@@ -93,6 +94,8 @@ func waitHealthy(url string, done <-chan struct{}, timeout time.Duration) error 
 			}
 		}
 		select {
+		case <-ctx.Done():
+			return ctx.Err()
 		case <-done:
 			return errors.New("process exited during startup")
 		case <-deadline:

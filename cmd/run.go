@@ -68,7 +68,7 @@ func newRunCmd() *cobra.Command {
 			if err := teff.Setup(cmd.Context(), mcpTefRepo, f.mcpTefDir, f.mcpTefRef); err != nil {
 				return err
 			}
-			srv, err := teff.Start(f.mcpTefDir, f.port, filepath.Join(f.out, "mcp-tef.log"))
+			srv, err := teff.Start(cmd.Context(), f.mcpTefDir, f.port, filepath.Join(f.out, "mcp-tef.log"))
 			if err != nil {
 				return err
 			}
