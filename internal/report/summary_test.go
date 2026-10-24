@@ -51,7 +51,7 @@ func TestSummarizeAllClassifications(t *testing.T) {
 		completed("m", "TP", 1, ms), completed("m", "FP", 1, ms),
 		completed("m", "TN", 1, ms), completed("m", "FN", 1, ms),
 	})[0]
-	if got.TP != 1 || got.FP != 1 || got.TN != 1 || got.FN != 1 || got.PassRate != 0.25 {
+	if got.TP != 1 || got.FP != 1 || got.TN != 1 || got.FN != 1 || got.PassRate != 0.5 {
 		t.Errorf("got %+v", got)
 	}
 }

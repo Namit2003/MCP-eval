@@ -97,8 +97,13 @@ func latencyText(l *Latency) string {
 	return fmt.Sprintf("avg %s p50 %s p95 %s", duration(l.Avg), duration(l.P50), duration(l.P95))
 }
 
+// duration formats d as whole milliseconds below one second, otherwise as
+// seconds with two decimals, so values line up.
 func duration(d time.Duration) string {
-	return d.Round(time.Millisecond).String()
+	if d < time.Second {
+		return fmt.Sprintf("%dms", d.Milliseconds())
+	}
+	return fmt.Sprintf("%.2fs", d.Seconds())
 }
 
 // wall formats a job's wall-clock time; zero means the job never ran

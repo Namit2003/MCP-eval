@@ -101,6 +101,11 @@ func newRunCmd() *cobra.Command {
 				return err
 			}
 			fmt.Fprintf(cmd.OutOrStdout(), "wrote %s\n", jsonPath)
+			htmlPath := filepath.Join(f.out, "report.html")
+			if err := report.WriteHTML(htmlPath, meta, summaries, results); err != nil {
+				return err
+			}
+			fmt.Fprintf(cmd.OutOrStdout(), "wrote %s\n", htmlPath)
 			// Failed jobs still count as a completed run; only Ctrl+C or
 			// SIGTERM makes the run itself fail.
 			if err := cmd.Context().Err(); err != nil {

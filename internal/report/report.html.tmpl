@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>tefrun report</title>
+<style>
+  :root { --bg: #fff; --fg: #1a1a1a; --muted: #666; --line: #e3e3e3; --card: #f7f7f7; --red: #c62828; --green: #2e7d32; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #121212; --fg: #e6e6e6; --muted: #999; --line: #333; --card: #1e1e1e; --red: #ef5350; --green: #66bb6a; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px; background: var(--bg); color: var(--fg); font: 14px/1.45 system-ui, sans-serif; }
+  main { max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .meta { color: var(--muted); margin-bottom: 24px; }
+  code, pre { font: 12px/1.4 ui-monospace, monospace; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-bottom: 28px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 16px; }
+  .card h2 { font-size: 14px; margin: 0 0 8px; }
+  .rate { font-size: 40px; font-weight: 700; line-height: 1; }
+  .rate small { font-size: 13px; font-weight: 400; color: var(--muted); margin-left: 6px; }
+  .card dl { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; margin: 12px 0 0; }
+  .card dt { color: var(--muted); }
+  .card dd { margin: 0; }
+  .lat { border-collapse: collapse; margin-top: 10px; width: auto; }
+  .lat th, .lat td { border: 0; padding: 1px 12px 1px 0; font-weight: 400; text-align: right; font-variant-numeric: tabular-nums; }
+  .lat th { color: var(--muted); text-align: left; }
+  .toggle { border: 0; background: none; color: var(--muted); cursor: pointer; padding: 0 4px 0 0; font: inherit; }
+  td.num { font-variant-numeric: tabular-nums; }
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .filters select, .filters input { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); }
+  .filters input { flex: 1; min-width: 180px; }
+  #count { color: var(--muted); align-self: center; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-weight: 600; white-space: nowrap; }
+  tbody.failed .status, tbody.failed .reason { color: var(--red); }
+  tbody.completed .status { color: var(--green); }
+  .reason { max-width: 420px; }
+  .details td { border-bottom: 1px solid var(--line); padding-top: 0; }
+  details summary { cursor: pointer; color: var(--muted); }
+  details[open] summary { margin-bottom: 8px; }
+  .matches th, .matches td { font-size: 13px; }
+  pre { white-space: pre-wrap; word-break: break-word; margin: 0; }
+  .raw pre { max-height: 400px; overflow: auto; background: var(--card); padding: 8px; border-radius: 6px; }
+  .kv { color: var(--muted); margin: 0 0 8px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>tefrun report</h1>
+  <div class="meta">
+    {{.Meta.Timestamp.Format "2006-01-02 15:04:05 UTC"}} · mcp-tef {{.Meta.McpTefRef}} (<code>{{.Meta.McpTefCommit}}</code>)
+  </div>
+
+  <section class="cards">
+    {{range .Summaries}}
+    <div class="card">
+      <h2>{{wbr .Model}}</h2>
+      <div class="rate">{{pct .PassRate}}<small>pass rate</small></div>
+      <dl>
+        <dt>Jobs</dt><dd>{{.Total}} · {{.Completed}} completed · {{.Failed}} failed</dd>
+        <dt>Classes</dt><dd>TP {{.TP}} · FP {{.FP}} · TN {{.TN}} · FN {{.FN}}</dd>
+        <dt>Tokens</dt><dd>n/a</dd>
+        <dt>Retries</dt><dd>n/a</dd>
+      </dl>
+      <table class="lat">
+        <tr><th></th><th>avg</th><th>p50</th><th>p95</th></tr>
+        <tr><th>Exec</th>{{with .ExecutionTime}}<td>{{dur .Avg}}</td><td>{{dur .P50}}</td><td>{{dur .P95}}</td>{{else}}<td colspan="3">n/a</td>{{end}}</tr>
+        <tr><th>Wall</th>{{with .WallClock}}<td>{{dur .Avg}}</td><td>{{dur .P50}}</td><td>{{dur .P95}}</td>{{else}}<td colspan="3">n/a</td>{{end}}</tr>
+      </table>
+    </div>
+    {{end}}
+  </section>
+
+  <div class="filters">
+    <select id="f-model"><option value="">All models</option>{{range .Summaries}}<option>{{.Model}}</option>{{end}}</select>
+    <select id="f-status"><option value="">All statuses</option><option>completed</option><option>failed</option></select>
+    <select id="f-class"><option value="">All classes</option><option>TP</option><option>FP</option><option>TN</option><option>FN</option></select>
+    <input id="f-text" type="search" placeholder="Search case, file or failure reason">
+    <span id="count"></span>
+  </div>
+
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Case</th><th>File</th><th>Model</th><th>Status</th><th>Class</th><th>Exec</th><th>Wall</th><th>Failure reason</th></tr></thead>
+    {{range .Jobs}}
+    <tbody class="job {{.Status}}" data-model="{{.Model}}" data-status="{{.Status}}" data-class="{{.Classification}}" data-text="{{lower .CaseName}} {{lower .SourceFile}} {{lower .FailureReason}}">
+      <tr>
+        <td><button class="toggle" aria-expanded="false" title="Show details">▸</button>{{.CaseName}}</td>
+        <td><code>{{.SourceFile}}</code></td>
+        <td>{{wbr .Model}}</td>
+        <td class="status">{{.Status}}</td>
+        <td>{{.Classification}}</td>
+        <td class="num">{{execMS .ExecutionTimeMS}}</td>
+        <td class="num">{{wall .WallClock}}</td>
+        <td class="reason">{{.FailureReason}}</td>
+      </tr>
+      <tr class="details" hidden><td colspan="8">
+          <p class="kv">
+            LLM confidence: {{or .LLMConfidence "-"}} · Confidence score: {{or .ConfidenceScore "-"}} ·
+            Avg parameter correctness: {{score .AvgParameterCorrectness}} · Tokens: n/a · Retries: n/a<br>
+            Test case <code>{{or .TestCaseID "-"}}</code> · Test run <code>{{or .TestRunID "-"}}</code>
+          </p>
+          {{if .ToolCallMatches}}
+          <table class="matches">
+            <thead><tr><th>Match</th><th>Expected</th><th>Actual</th><th>Parameters used</th><th>Score</th><th>Justification</th></tr></thead>
+            <tbody>
+            {{range .ToolCallMatches}}
+              <tr>
+                <td>{{.MatchType}}</td>
+                <td>{{with .ExpectedToolCall}}<code>{{.ToolName}}</code><pre>{{json .Parameters}}</pre>{{else}}-{{end}}</td>
+                <td>{{with .ActualToolCall}}<code>{{.Name}}</code>{{else}}-{{end}}</td>
+                <td><pre>{{json .ActualParameters}}</pre></td>
+                <td>{{score .ParameterCorrectness}}</td>
+                <td>{{or .ParameterJustification "-"}}</td>
+              </tr>
+            {{end}}
+            </tbody>
+          </table>
+          {{else}}
+          <p class="kv">No tool call matches.</p>
+          {{end}}
+          {{if .LLMResponseRaw}}
+          <details class="raw"><summary>Raw LLM response</summary><pre>{{.LLMResponseRaw}}</pre></details>
+          {{end}}
+      </td></tr>
+    </tbody>
+    {{end}}
+  </table>
+  </div>
+</main>
+<script>
+  const jobs = [...document.querySelectorAll("tbody.job")];
+  const val = id => document.getElementById(id).value;
+  function filter() {
+    const model = val("f-model"), status = val("f-status"), cls = val("f-class"), text = val("f-text").toLowerCase();
+    let shown = 0;
+    for (const j of jobs) {
+      const show = (!model || j.dataset.model === model) && (!status || j.dataset.status === status) &&
+        (!cls || j.dataset.class === cls) && (!text || j.dataset.text.includes(text));
+      j.hidden = !show;
+      if (show) shown++;
+    }
+    document.getElementById("count").textContent = shown + " of " + jobs.length + " jobs";
+  }
+  for (const b of document.querySelectorAll(".toggle")) {
+    b.addEventListener("click", () => {
+      const row = b.closest("tbody").querySelector("tr.details");
+      row.hidden = !row.hidden;
+      b.textContent = row.hidden ? "▸" : "▾";
+      b.setAttribute("aria-expanded", String(!row.hidden));
+    });
+  }
+  for (const id of ["f-model", "f-status", "f-class", "f-text"]) document.getElementById(id).addEventListener("input", filter);
+  filter();
+</script>
+</body>
+</html>

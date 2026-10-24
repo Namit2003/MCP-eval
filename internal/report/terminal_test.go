@@ -19,8 +19,8 @@ func TestTerminalProgress(t *testing.T) {
 	bad.CaseName = "Get issue"
 	term.Progress(4, 10, bad)
 
-	want := "[3/10] Search repos × ollama/m  completed TP  1.234s\n" +
-		"[4/10] Get issue × ollama/m  failed timeout  1s\n"
+	want := "[3/10] Search repos × ollama/m  completed TP  1.23s\n" +
+		"[4/10] Get issue × ollama/m  failed timeout  1.00s\n"
 	if buf.String() != want {
 		t.Errorf("got:\n%s\nwant:\n%s", buf.String(), want)
 	}

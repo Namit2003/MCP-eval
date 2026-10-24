@@ -17,7 +17,7 @@ type ModelSummary struct {
 	FP            int      `json:"fp"`
 	TN            int      `json:"tn"`
 	FN            int      `json:"fn"`
-	PassRate      float64  `json:"pass_rate"`      // TP / Total; failed jobs count in Total
+	PassRate      float64  `json:"pass_rate"`      // (TP + TN) / Total; failed jobs count in Total
 	ExecutionTime *Latency `json:"execution_time"` // from mcp-tef's execution_time_ms
 	WallClock     *Latency `json:"wall_clock"`     // measured by tefrun
 }
@@ -66,7 +66,7 @@ func Summarize(results []runner.Result) []ModelSummary {
 				exec = append(exec, time.Duration(*r.ExecutionTimeMS)*time.Millisecond)
 			}
 		}
-		s.PassRate = float64(s.TP) / float64(s.Total)
+		s.PassRate = float64(s.TP+s.TN) / float64(s.Total)
 		s.ExecutionTime = latency(exec)
 		s.WallClock = latency(wall)
 		summaries = append(summaries, s)
