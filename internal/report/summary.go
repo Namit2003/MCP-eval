@@ -9,14 +9,17 @@ import (
 
 // ModelSummary aggregates one model's results.
 type ModelSummary struct {
-	Model          string
-	Total          int
-	Completed      int
-	Failed         int
-	TP, FP, TN, FN int
-	PassRate       float64 // TP / Total; failed jobs count in Total
-	ExecutionTime  Latency // from mcp-tef's execution_time_ms
-	WallClock      Latency // measured by tefrun
+	Model         string  `json:"model"`
+	Total         int     `json:"total"`
+	Completed     int     `json:"completed"`
+	Failed        int     `json:"failed"`
+	TP            int     `json:"tp"`
+	FP            int     `json:"fp"`
+	TN            int     `json:"tn"`
+	FN            int     `json:"fn"`
+	PassRate      float64 `json:"pass_rate"`      // TP / Total; failed jobs count in Total
+	ExecutionTime Latency `json:"execution_time"` // from mcp-tef's execution_time_ms
+	WallClock     Latency `json:"wall_clock"`     // measured by tefrun
 }
 
 // Latency statistics over a model's completed jobs. All zero when the model

@@ -23,25 +23,25 @@ type Options struct {
 
 // Result is the outcome of one (test case × model) job.
 type Result struct {
-	CaseName   string
-	SourceFile string
-	Model      string
+	CaseName   string `json:"case_name"`
+	SourceFile string `json:"source_file"`
+	Model      string `json:"model"`
 
-	Status        string // "completed" or "failed"
-	FailureReason string
+	Status        string `json:"status"` // "completed" or "failed"
+	FailureReason string `json:"failure_reason,omitempty"`
 
-	Classification          string
-	LLMConfidence           string
-	ConfidenceScore         string
-	AvgParameterCorrectness *float64
-	ToolCallMatches         []teff.ToolCallMatch
-	LLMResponseRaw          string
+	Classification          string               `json:"classification"`
+	LLMConfidence           string               `json:"llm_confidence"`
+	ConfidenceScore         string               `json:"confidence_score"`
+	AvgParameterCorrectness *float64             `json:"avg_parameter_correctness"`
+	ToolCallMatches         []teff.ToolCallMatch `json:"tool_call_matches"`
+	LLMResponseRaw          string               `json:"llm_response_raw"`
 
-	ExecutionTimeMS *int          // measured by mcp-tef
-	WallClock       time.Duration // measured by tefrun, from run request to final status
+	ExecutionTimeMS *int          `json:"execution_time_ms"` // measured by mcp-tef
+	WallClock       time.Duration `json:"-"`                 // measured by tefrun, from run request to final status; written as wall_clock_ms by the report
 
-	TestCaseID string
-	TestRunID  string
+	TestCaseID string `json:"test_case_id"`
+	TestRunID  string `json:"test_run_id"`
 }
 
 // Run creates every test case once in mcp-tef, then runs each one on every

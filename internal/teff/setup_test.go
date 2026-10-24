@@ -55,6 +55,9 @@ func TestCheckout(t *testing.T) {
 	if got := git(t, dir, "show", "HEAD:file.txt"); got != "v3" {
 		t.Errorf("after checkout of main: got %q", got)
 	}
+	if got, err := headCommit(ctx, dir); err != nil || got != git(t, repo, "rev-parse", "main") {
+		t.Errorf("headCommit = (%q, %v), want main's commit", got, err)
+	}
 
 	if err := checkout(ctx, repo, dir, "no-such-ref"); err == nil {
 		t.Error("expected an error for an unknown ref")

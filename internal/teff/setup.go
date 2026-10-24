@@ -11,17 +11,31 @@ import (
 )
 
 // Setup makes dir a checkout of repoURL at ref, then installs mcp-tef's
-// dependencies with uv. An existing dir is reused and moved to ref.
-func Setup(ctx context.Context, repoURL, dir, ref string) error {
+// dependencies with uv. An existing dir is reused and moved to ref. It
+// returns the commit hash that was checked out.
+func Setup(ctx context.Context, repoURL, dir, ref string) (string, error) {
 	if err := checkout(ctx, repoURL, dir, ref); err != nil {
-		return fmt.Errorf("mcp-tef setup: %w", err)
+		return "", fmt.Errorf("mcp-tef setup: %w", err)
 	}
 	// --frozen installs exactly what uv.lock says and never rewrites it, so
 	// the checkout stays clean for the next run's checkout.
 	if err := run(ctx, dir, "uv", "sync", "--frozen"); err != nil {
-		return fmt.Errorf("mcp-tef setup: %w", err)
+		return "", fmt.Errorf("mcp-tef setup: %w", err)
 	}
-	return nil
+	commit, err := headCommit(ctx, dir)
+	if err != nil {
+		return "", fmt.Errorf("mcp-tef setup: %w", err)
+	}
+	return commit, nil
+}
+
+// headCommit returns the commit hash checked out in dir.
+func headCommit(ctx context.Context, dir string) (string, error) {
+	out, err := exec.CommandContext(ctx, "git", "-C", dir, "rev-parse", "HEAD").Output()
+	if err != nil {
+		return "", fmt.Errorf("git rev-parse HEAD: %w", err)
+	}
+	return strings.TrimSpace(string(out)), nil
 }
 
 // checkout clones repoURL into dir if needed, then fetches ref and checks it

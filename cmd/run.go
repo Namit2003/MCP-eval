@@ -7,7 +7,9 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 
+	"github.com/Namit2003/mcp-eval/internal/report"
 	"github.com/Namit2003/mcp-eval/internal/runner"
 	"github.com/Namit2003/mcp-eval/internal/teff"
 )
@@ -66,7 +68,9 @@ func newRunCmd() *cobra.Command {
 				return err
 			}
 			printSummary(cmd.OutOrStdout(), loaded)
-			if err := teff.Setup(cmd.Context(), mcpTefRepo, f.mcpTefDir, f.mcpTefRef); err != nil {
+			started := time.Now()
+			commit, err := teff.Setup(cmd.Context(), mcpTefRepo, f.mcpTefDir, f.mcpTefRef)
+			if err != nil {
 				return err
 			}
 			srv, err := teff.Start(cmd.Context(), f.mcpTefDir, f.port, filepath.Join(f.out, "mcp-tef.log"))
@@ -87,6 +91,19 @@ func newRunCmd() *cobra.Command {
 				}
 			}
 			fmt.Fprintf(cmd.OutOrStdout(), "%d jobs: %d completed, %d failed\n", len(results), completed, len(results)-completed)
+
+			flags := make(map[string]string)
+			cmd.Flags().VisitAll(func(fl *pflag.Flag) {
+				if fl.Name != "help" {
+					flags[fl.Name] = fl.Value.String()
+				}
+			})
+			meta := report.Metadata{Timestamp: started.UTC(), McpTefRef: f.mcpTefRef, McpTefCommit: commit, Flags: flags}
+			jsonPath := filepath.Join(f.out, "results.json")
+			if err := report.WriteJSON(jsonPath, meta, report.Summarize(results), results); err != nil {
+				return err
+			}
+			fmt.Fprintf(cmd.OutOrStdout(), "wrote %s\n", jsonPath)
 			// Failed jobs still count as a completed run; only Ctrl+C or
 			// SIGTERM makes the run itself fail.
 			if err := cmd.Context().Err(); err != nil {
