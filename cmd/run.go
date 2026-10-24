@@ -8,6 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/Namit2003/mcp-eval/internal/runner"
 	"github.com/Namit2003/mcp-eval/internal/teff"
 )
 
@@ -74,8 +75,24 @@ func newRunCmd() *cobra.Command {
 			}
 			defer srv.Stop()
 			fmt.Fprintf(cmd.OutOrStdout(), "mcp-tef healthy at %s\n", srv.URL)
-			// Executing jobs arrives in later phases.
-			return errors.New("run: executing evals is not implemented yet")
+			results := runner.Run(cmd.Context(), teff.NewClient(srv.URL), loaded.suite, loaded.models.Models, runner.Options{
+				Parallel:     f.parallel,
+				Timeout:      f.timeout,
+				PollInterval: f.pollInterval,
+			})
+			completed := 0
+			for _, r := range results {
+				if r.Status == "completed" {
+					completed++
+				}
+			}
+			fmt.Fprintf(cmd.OutOrStdout(), "%d jobs: %d completed, %d failed\n", len(results), completed, len(results)-completed)
+			// Failed jobs still count as a completed run; only Ctrl+C or
+			// SIGTERM makes the run itself fail.
+			if err := cmd.Context().Err(); err != nil {
+				return fmt.Errorf("run interrupted: %w", err)
+			}
+			return nil
 		},
 	}
 	f.register(cmd)
