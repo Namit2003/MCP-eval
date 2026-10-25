@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestProxyAddsBearerToken(t *testing.T) {
@@ -16,7 +17,7 @@ func TestProxyAddsBearerToken(t *testing.T) {
 	defer upstream.Close()
 
 	target, _ := url.Parse(upstream.URL + "/mcp/readonly")
-	proxy := httptest.NewServer(newProxy(target, "secret"))
+	proxy := httptest.NewServer(newProxy(target, "secret", 0))
 	defer proxy.Close()
 
 	req, _ := http.NewRequest("POST", proxy.URL+"/x", nil)
@@ -28,6 +29,27 @@ func TestProxyAddsBearerToken(t *testing.T) {
 	resp.Body.Close()
 	if gotAuth != "Bearer secret" || gotPath != "/mcp/readonly/x" {
 		t.Errorf("upstream got auth %q path %q", gotAuth, gotPath)
+	}
+}
+
+func TestProxyRateLimit(t *testing.T) {
+	upstream := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
+	defer upstream.Close()
+	target, _ := url.Parse(upstream.URL)
+	proxy := httptest.NewServer(newProxy(target, "secret", 10))
+	defer proxy.Close()
+
+	start := time.Now()
+	for range 5 {
+		resp, err := http.Get(proxy.URL)
+		if err != nil {
+			t.Fatal(err)
+		}
+		resp.Body.Close()
+	}
+	// At 10 requests per second, 5 requests take at least 5 ticks of 100ms.
+	if elapsed := time.Since(start); elapsed < 450*time.Millisecond {
+		t.Errorf("5 requests took %s, want at least 450ms", elapsed)
 	}
 }
 

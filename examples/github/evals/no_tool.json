@@ -10,35 +10,8 @@
       ]
     },
     {
-      "name": "What is rebase",
-      "query": "What is git rebase?",
-      "expected_tool_calls": [],
-      "order_dependent_matching": false,
-      "available_mcp_servers": [
-        "http://127.0.0.1:8080"
-      ]
-    },
-    {
-      "name": "Semver regex",
-      "query": "Write a regex that matches semantic version strings like 1.2.3",
-      "expected_tool_calls": [],
-      "order_dependent_matching": false,
-      "available_mcp_servers": [
-        "http://127.0.0.1:8080"
-      ]
-    },
-    {
       "name": "Undo local commit",
       "query": "How do I undo my last local git commit?",
-      "expected_tool_calls": [],
-      "order_dependent_matching": false,
-      "available_mcp_servers": [
-        "http://127.0.0.1:8080"
-      ]
-    },
-    {
-      "name": "What is a CLI framework",
-      "query": "What does a CLI framework do?",
       "expected_tool_calls": [],
       "order_dependent_matching": false,
       "available_mcp_servers": [

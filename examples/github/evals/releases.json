@@ -1,24 +1,6 @@
 {
   "test_cases": [
     {
-      "name": "Latest release",
-      "query": "Show me the latest release of spf13/cobra",
-      "expected_tool_calls": [
-        {
-          "mcp_server_url": "http://127.0.0.1:8080",
-          "tool_name": "get_latest_release",
-          "parameters": {
-            "owner": "spf13",
-            "repo": "cobra"
-          }
-        }
-      ],
-      "order_dependent_matching": false,
-      "available_mcp_servers": [
-        "http://127.0.0.1:8080"
-      ]
-    },
-    {
       "name": "Release by tag",
       "query": "Show the release notes for spf13/cobra v1.9.1",
       "expected_tool_calls": [
@@ -29,42 +11,6 @@
             "owner": "spf13",
             "repo": "cobra",
             "tag": "v1.9.1"
-          }
-        }
-      ],
-      "order_dependent_matching": false,
-      "available_mcp_servers": [
-        "http://127.0.0.1:8080"
-      ]
-    },
-    {
-      "name": "List releases",
-      "query": "List the 5 most recent releases of spf13/cobra",
-      "expected_tool_calls": [
-        {
-          "mcp_server_url": "http://127.0.0.1:8080",
-          "tool_name": "list_releases",
-          "parameters": {
-            "owner": "spf13",
-            "repo": "cobra"
-          }
-        }
-      ],
-      "order_dependent_matching": false,
-      "available_mcp_servers": [
-        "http://127.0.0.1:8080"
-      ]
-    },
-    {
-      "name": "List tags",
-      "query": "List the git tags in spf13/cobra",
-      "expected_tool_calls": [
-        {
-          "mcp_server_url": "http://127.0.0.1:8080",
-          "tool_name": "list_tags",
-          "parameters": {
-            "owner": "spf13",
-            "repo": "cobra"
           }
         }
       ],

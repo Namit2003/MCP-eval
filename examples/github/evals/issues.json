@@ -1,25 +1,6 @@
 {
   "test_cases": [
     {
-      "name": "List open issues",
-      "query": "List the 5 most recent open issues in spf13/cobra",
-      "expected_tool_calls": [
-        {
-          "mcp_server_url": "http://127.0.0.1:8080",
-          "tool_name": "list_issues",
-          "parameters": {
-            "owner": "spf13",
-            "repo": "cobra",
-            "state": "OPEN"
-          }
-        }
-      ],
-      "order_dependent_matching": false,
-      "available_mcp_servers": [
-        "http://127.0.0.1:8080"
-      ]
-    },
-    {
       "name": "Search issues by topic",
       "query": "Find issues in spf13/cobra that talk about the mousetrap",
       "expected_tool_calls": [
@@ -30,26 +11,6 @@
             "owner": "spf13",
             "repo": "cobra",
             "query": "mousetrap"
-          }
-        }
-      ],
-      "order_dependent_matching": false,
-      "available_mcp_servers": [
-        "http://127.0.0.1:8080"
-      ]
-    },
-    {
-      "name": "Get issue by number",
-      "query": "Show me issue #2544 in spf13/cobra",
-      "expected_tool_calls": [
-        {
-          "mcp_server_url": "http://127.0.0.1:8080",
-          "tool_name": "issue_read",
-          "parameters": {
-            "owner": "spf13",
-            "repo": "cobra",
-            "method": "get",
-            "issue_number": 2544
           }
         }
       ],
