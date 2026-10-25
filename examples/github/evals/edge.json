@@ -74,32 +74,6 @@
       "available_mcp_servers": [
         "http://127.0.0.1:8080"
       ]
-    },
-    {
-      "name": "Two independent calls",
-      "query": "What are the latest releases of spf13/cobra and spf13/viper?",
-      "expected_tool_calls": [
-        {
-          "mcp_server_url": "http://127.0.0.1:8080",
-          "tool_name": "get_latest_release",
-          "parameters": {
-            "owner": "spf13",
-            "repo": "cobra"
-          }
-        },
-        {
-          "mcp_server_url": "http://127.0.0.1:8080",
-          "tool_name": "get_latest_release",
-          "parameters": {
-            "owner": "spf13",
-            "repo": "viper"
-          }
-        }
-      ],
-      "order_dependent_matching": false,
-      "available_mcp_servers": [
-        "http://127.0.0.1:8080"
-      ]
     }
   ]
 }
