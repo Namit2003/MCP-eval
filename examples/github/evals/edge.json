@@ -1,0 +1,205 @@
+{
+  "test_cases": [
+    {
+      "name": "Missing repo",
+      "query": "Show me the latest release",
+      "expected_tool_calls": [],
+      "order_dependent_matching": false,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    },
+    {
+      "name": "Write request on read-only server",
+      "query": "Create an issue in spf13/cobra titled 'test'",
+      "expected_tool_calls": [],
+      "order_dependent_matching": false,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    },
+    {
+      "name": "Nonexistent issue",
+      "query": "Show me issue #999999 in spf13/cobra",
+      "expected_tool_calls": [
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "issue_read",
+          "parameters": {
+            "owner": "spf13",
+            "repo": "cobra",
+            "method": "get",
+            "issue_number": 999999
+          }
+        }
+      ],
+      "order_dependent_matching": false,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    },
+    {
+      "name": "URL instead of owner/repo",
+      "query": "Summarize https://github.com/spf13/cobra/pull/2555",
+      "expected_tool_calls": [
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "pull_request_read",
+          "parameters": {
+            "owner": "spf13",
+            "repo": "cobra",
+            "method": "get",
+            "pullNumber": 2555
+          }
+        }
+      ],
+      "order_dependent_matching": false,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    },
+    {
+      "name": "Non-English query",
+      "query": "Muestra la última versión publicada de spf13/cobra",
+      "expected_tool_calls": [
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "get_latest_release",
+          "parameters": {
+            "owner": "spf13",
+            "repo": "cobra"
+          }
+        }
+      ],
+      "order_dependent_matching": false,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    },
+    {
+      "name": "Typos",
+      "query": "lst the 5 lastest opn isues in spf13/cobra",
+      "expected_tool_calls": [
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "list_issues",
+          "parameters": {
+            "owner": "spf13",
+            "repo": "cobra",
+            "state": "OPEN"
+          }
+        }
+      ],
+      "order_dependent_matching": false,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    },
+    {
+      "name": "Closed state",
+      "query": "Show the 5 most recently closed pull requests in spf13/cobra",
+      "expected_tool_calls": [
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "list_pull_requests",
+          "parameters": {
+            "owner": "spf13",
+            "repo": "cobra",
+            "state": "closed"
+          }
+        }
+      ],
+      "order_dependent_matching": false,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    },
+    {
+      "name": "Label filter",
+      "query": "List the open issues in spf13/cobra labeled kind/bug",
+      "expected_tool_calls": [
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "list_issues",
+          "parameters": {
+            "owner": "spf13",
+            "repo": "cobra",
+            "state": "OPEN",
+            "labels": [
+              "kind/bug"
+            ]
+          }
+        }
+      ],
+      "order_dependent_matching": false,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    },
+    {
+      "name": "Two independent calls",
+      "query": "What are the latest releases of spf13/cobra and spf13/viper?",
+      "expected_tool_calls": [
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "get_latest_release",
+          "parameters": {
+            "owner": "spf13",
+            "repo": "cobra"
+          }
+        },
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "get_latest_release",
+          "parameters": {
+            "owner": "spf13",
+            "repo": "viper"
+          }
+        }
+      ],
+      "order_dependent_matching": false,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    },
+    {
+      "name": "File at a tag",
+      "query": "Show the README of spf13/cobra as it was at tag v1.9.1",
+      "expected_tool_calls": [
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "get_file_contents",
+          "parameters": {
+            "owner": "spf13",
+            "repo": "cobra",
+            "path": "README.md",
+            "ref": "refs/tags/v1.9.1"
+          }
+        }
+      ],
+      "order_dependent_matching": false,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    },
+    {
+      "name": "Date filter",
+      "query": "Show commits in spf13/cobra since 2025-09-01",
+      "expected_tool_calls": [
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "list_commits",
+          "parameters": {
+            "owner": "spf13",
+            "repo": "cobra",
+            "since": "2025-09-01"
+          }
+        }
+      ],
+      "order_dependent_matching": false,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    }
+  ]
+}

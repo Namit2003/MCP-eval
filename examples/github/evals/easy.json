@@ -1,0 +1,91 @@
+{
+  "test_cases": [
+    {
+      "name": "List branches",
+      "query": "List the branches of spf13/cobra",
+      "expected_tool_calls": [
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "list_branches",
+          "parameters": {
+            "owner": "spf13",
+            "repo": "cobra"
+          }
+        }
+      ],
+      "order_dependent_matching": false,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    },
+    {
+      "name": "Who am I",
+      "query": "Who am I on GitHub?",
+      "expected_tool_calls": [
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "get_me",
+          "parameters": {}
+        }
+      ],
+      "order_dependent_matching": false,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    },
+    {
+      "name": "Search users",
+      "query": "Find the GitHub user spf13",
+      "expected_tool_calls": [
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "search_users",
+          "parameters": {
+            "query": "spf13"
+          }
+        }
+      ],
+      "order_dependent_matching": false,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    },
+    {
+      "name": "Get label",
+      "query": "Show the area/flags-args label in spf13/cobra",
+      "expected_tool_calls": [
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "get_label",
+          "parameters": {
+            "owner": "spf13",
+            "repo": "cobra",
+            "name": "area/flags-args"
+          }
+        }
+      ],
+      "order_dependent_matching": false,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    },
+    {
+      "name": "Casual wording",
+      "query": "yo what's the newest cobra release? the spf13 one",
+      "expected_tool_calls": [
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "get_latest_release",
+          "parameters": {
+            "owner": "spf13",
+            "repo": "cobra"
+          }
+        }
+      ],
+      "order_dependent_matching": false,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,137 @@
+{
+  "test_cases": [
+    {
+      "name": "Newest PR files",
+      "query": "Which files does the newest open pull request in spf13/cobra change?",
+      "expected_tool_calls": [
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "list_pull_requests",
+          "parameters": {
+            "owner": "spf13",
+            "repo": "cobra",
+            "state": "open"
+          }
+        },
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "pull_request_read",
+          "parameters": {
+            "owner": "spf13",
+            "repo": "cobra",
+            "method": "get_files"
+          }
+        }
+      ],
+      "order_dependent_matching": true,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    },
+    {
+      "name": "Newest issue comments",
+      "query": "Show the comments on the newest open issue in spf13/cobra",
+      "expected_tool_calls": [
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "list_issues",
+          "parameters": {
+            "owner": "spf13",
+            "repo": "cobra",
+            "state": "OPEN"
+          }
+        },
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "issue_read",
+          "parameters": {
+            "owner": "spf13",
+            "repo": "cobra",
+            "method": "get_comments"
+          }
+        }
+      ],
+      "order_dependent_matching": true,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    },
+    {
+      "name": "Latest commit details",
+      "query": "What changed in the latest commit on the main branch of spf13/cobra?",
+      "expected_tool_calls": [
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "list_commits",
+          "parameters": {
+            "owner": "spf13",
+            "repo": "cobra"
+          }
+        },
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "get_commit",
+          "parameters": {
+            "owner": "spf13",
+            "repo": "cobra"
+          }
+        }
+      ],
+      "order_dependent_matching": true,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    },
+    {
+      "name": "Latest release tag details",
+      "query": "Find the latest release of spf13/cobra, then show the details of its git tag",
+      "expected_tool_calls": [
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "get_latest_release",
+          "parameters": {
+            "owner": "spf13",
+            "repo": "cobra"
+          }
+        },
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "get_tag",
+          "parameters": {
+            "owner": "spf13",
+            "repo": "cobra"
+          }
+        }
+      ],
+      "order_dependent_matching": true,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    },
+    {
+      "name": "Search code then read file",
+      "query": "Find where cobra.ExactArgs is defined in spf13/cobra and show me that file",
+      "expected_tool_calls": [
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "search_code",
+          "parameters": {
+            "query": "ExactArgs repo:spf13/cobra"
+          }
+        },
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "get_file_contents",
+          "parameters": {
+            "owner": "spf13",
+            "repo": "cobra"
+          }
+        }
+      ],
+      "order_dependent_matching": true,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    }
+  ]
+}

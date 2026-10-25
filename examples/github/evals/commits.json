@@ -1,0 +1,77 @@
+{
+  "test_cases": [
+    {
+      "name": "List recent commits",
+      "query": "Show the 5 latest commits in spf13/cobra",
+      "expected_tool_calls": [
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "list_commits",
+          "parameters": {
+            "owner": "spf13",
+            "repo": "cobra"
+          }
+        }
+      ],
+      "order_dependent_matching": false,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    },
+    {
+      "name": "Get commit by sha",
+      "query": "What changed in commit adbc8813901bba65827259daa8e22ff94ec1f30e in spf13/cobra?",
+      "expected_tool_calls": [
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "get_commit",
+          "parameters": {
+            "owner": "spf13",
+            "repo": "cobra",
+            "sha": "adbc8813901bba65827259daa8e22ff94ec1f30e"
+          }
+        }
+      ],
+      "order_dependent_matching": false,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    },
+    {
+      "name": "Search commits by message",
+      "query": "Find commits in spf13/cobra whose message mentions mousetrap",
+      "expected_tool_calls": [
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "search_commits",
+          "parameters": {
+            "query": "repo:spf13/cobra mousetrap"
+          }
+        }
+      ],
+      "order_dependent_matching": false,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    },
+    {
+      "name": "Commits touching a file",
+      "query": "Show the 5 most recent commits in spf13/cobra that changed command.go",
+      "expected_tool_calls": [
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "list_commits",
+          "parameters": {
+            "owner": "spf13",
+            "repo": "cobra",
+            "path": "command.go"
+          }
+        }
+      ],
+      "order_dependent_matching": false,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    }
+  ]
+}

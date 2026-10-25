@@ -1,0 +1,82 @@
+{
+  "test_cases": [
+    {
+      "name": "List open PRs",
+      "query": "List the 5 most recent open pull requests in spf13/cobra",
+      "expected_tool_calls": [
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "list_pull_requests",
+          "parameters": {
+            "owner": "spf13",
+            "repo": "cobra",
+            "state": "open"
+          }
+        }
+      ],
+      "order_dependent_matching": false,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    },
+    {
+      "name": "Search PRs by topic",
+      "query": "Find pull requests in spf13/cobra related to TraverseChildren",
+      "expected_tool_calls": [
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "search_pull_requests",
+          "parameters": {
+            "owner": "spf13",
+            "repo": "cobra",
+            "query": "TraverseChildren"
+          }
+        }
+      ],
+      "order_dependent_matching": false,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    },
+    {
+      "name": "Get PR by number",
+      "query": "Show me pull request #2555 in spf13/cobra",
+      "expected_tool_calls": [
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "pull_request_read",
+          "parameters": {
+            "owner": "spf13",
+            "repo": "cobra",
+            "method": "get",
+            "pullNumber": 2555
+          }
+        }
+      ],
+      "order_dependent_matching": false,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    },
+    {
+      "name": "Get PR files",
+      "query": "Which files did pull request #2545 in spf13/cobra change?",
+      "expected_tool_calls": [
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "pull_request_read",
+          "parameters": {
+            "owner": "spf13",
+            "repo": "cobra",
+            "method": "get_files",
+            "pullNumber": 2545
+          }
+        }
+      ],
+      "order_dependent_matching": false,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    }
+  ]
+}

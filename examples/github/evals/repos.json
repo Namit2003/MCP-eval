@@ -1,0 +1,76 @@
+{
+  "test_cases": [
+    {
+      "name": "Search repositories",
+      "query": "Find Go libraries for building command-line apps",
+      "expected_tool_calls": [
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "search_repositories",
+          "parameters": {
+            "query": "go cli"
+          }
+        }
+      ],
+      "order_dependent_matching": false,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    },
+    {
+      "name": "Search code",
+      "query": "Where is EnablePrefixMatching defined in the spf13/cobra code?",
+      "expected_tool_calls": [
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "search_code",
+          "parameters": {
+            "query": "EnablePrefixMatching repo:spf13/cobra"
+          }
+        }
+      ],
+      "order_dependent_matching": false,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    },
+    {
+      "name": "Get file",
+      "query": "Show me the README of spf13/cobra",
+      "expected_tool_calls": [
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "get_file_contents",
+          "parameters": {
+            "owner": "spf13",
+            "repo": "cobra",
+            "path": "README.md"
+          }
+        }
+      ],
+      "order_dependent_matching": false,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    },
+    {
+      "name": "List directory",
+      "query": "What files are in the doc folder of spf13/cobra?",
+      "expected_tool_calls": [
+        {
+          "mcp_server_url": "http://127.0.0.1:8080",
+          "tool_name": "get_file_contents",
+          "parameters": {
+            "owner": "spf13",
+            "repo": "cobra",
+            "path": "doc"
+          }
+        }
+      ],
+      "order_dependent_matching": false,
+      "available_mcp_servers": [
+        "http://127.0.0.1:8080"
+      ]
+    }
+  ]
+}
