@@ -36,7 +36,7 @@ func newRootCmd() *cobra.Command {
 		SilenceUsage:  true,
 		SilenceErrors: true,
 	}
-	root.AddCommand(newRunCmd(), newValidateCmd())
+	root.AddCommand(newRunCmd(), newValidateCmd(), newProxyCmd())
 	return root
 }
 
