@@ -1,0 +1,29 @@
+{
+  "test_cases": [
+    {
+      "name": "Latest release",
+      "query": "Show me the latest release of spf13/cobra",
+      "expected_tool_calls": [
+        { "mcp_server_url": "http://127.0.0.1:8080", "tool_name": "get_latest_release", "parameters": { "owner": "spf13", "repo": "cobra" } }
+      ],
+      "order_dependent_matching": false,
+      "available_mcp_servers": ["http://127.0.0.1:8080"]
+    },
+    {
+      "name": "List open issues",
+      "query": "List the open issues in spf13/cobra",
+      "expected_tool_calls": [
+        { "mcp_server_url": "http://127.0.0.1:8080", "tool_name": "list_issues", "parameters": { "owner": "spf13", "repo": "cobra", "state": "OPEN" } }
+      ],
+      "order_dependent_matching": false,
+      "available_mcp_servers": ["http://127.0.0.1:8080"]
+    },
+    {
+      "name": "No tool: tag vs branch",
+      "query": "What is the difference between a git tag and a git branch?",
+      "expected_tool_calls": [],
+      "order_dependent_matching": false,
+      "available_mcp_servers": ["http://127.0.0.1:8080"]
+    }
+  ]
+}
