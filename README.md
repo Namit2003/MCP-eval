@@ -21,7 +21,7 @@ mcp-tef can't send auth headers, so `tefrun proxy` adds your GitHub token and fo
    tefrun run --tests examples/github/evals --models examples/github/model.config.json --parallel 2 --timeout 60m --out reports/github
    ```
 
-A sample report is in `examples/github/sample-report/`.
+A sample report is in `examples/github/sample-report/`. Its write cases were re-run after a setup bug fix and merged in; see `metadata.flags.note` in `results.json`.
 
 ## Known limitations
 
