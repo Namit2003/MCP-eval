@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -28,6 +29,7 @@ type Options struct {
 
 // Result is the outcome of one (test case × model) job.
 type Result struct {
+	JobID      string `json:"job_id"` // run start (unix seconds) and job number; fills ${job}
 	CaseName   string `json:"case_name"`
 	SourceFile string `json:"source_file"`
 	Model      string `json:"model"`
@@ -49,8 +51,8 @@ type Result struct {
 	TestRunID  string `json:"test_run_id"`
 }
 
-// Run creates every test case once in mcp-tef, then runs each one on every
-// model, at most opts.Parallel jobs at a time. It returns one result per
+// Run creates every test case once in mcp-tef, or once per model when it uses
+// ${job}, then runs each one on every model, at most opts.Parallel jobs at a time. It returns one result per
 // job, in file, case, model order. A failed job never stops the run.
 func Run(ctx context.Context, client *teff.Client, suite *tests.Suite, models []config.Model, opts Options) []Result {
 	ctx, cancel := context.WithTimeout(ctx, opts.Timeout)
@@ -69,13 +71,23 @@ func Run(ctx context.Context, client *teff.Client, suite *tests.Suite, models []
 		opts.OnDone(done, n, r)
 	}
 
+	runStart := time.Now().Unix()
 	results := make([]Result, 0, n)
 	jobModels := make([]config.Model, 0, n) // jobModels[i] is the model for results[i]
 	for _, f := range suite.Files {
 		for _, c := range f.Cases {
-			id, err := client.CreateTestCase(ctx, c.Raw)
+			perJob := bytes.Contains(c.Raw, []byte(tests.JobRef))
+			var id string
+			var err error
+			if !perJob {
+				id, err = client.CreateTestCase(ctx, c.Raw)
+			}
 			for _, m := range models {
-				r := Result{CaseName: c.Name, SourceFile: f.Path, Model: m.Label(), TestCaseID: id}
+				jobID := fmt.Sprintf("%d-%d", runStart, len(results)+1)
+				if perJob {
+					id, err = client.CreateTestCase(ctx, bytes.ReplaceAll(c.Raw, []byte(tests.JobRef), []byte(jobID)))
+				}
+				r := Result{JobID: jobID, CaseName: c.Name, SourceFile: f.Path, Model: m.Label(), TestCaseID: id}
 				if err != nil {
 					r.Status = "failed"
 					r.FailureReason = failureReason(ctx, fmt.Errorf("create test case: %w", err))

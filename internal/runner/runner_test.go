@@ -30,6 +30,7 @@ type fakeTef struct {
 	peak    int
 	runsFor map[string]int // test case id -> runs started
 	apiKeys []string
+	created []string // names of created test cases, in order
 }
 
 func newFakeTef(t *testing.T, f *fakeTef) *teff.Client {
@@ -42,6 +43,9 @@ func newFakeTef(t *testing.T, f *fakeTef) *teff.Client {
 	mux.HandleFunc("POST /test-cases", func(w http.ResponseWriter, r *http.Request) {
 		var c struct{ Name string }
 		json.NewDecoder(r.Body).Decode(&c)
+		f.mu.Lock()
+		f.created = append(f.created, c.Name)
+		f.mu.Unlock()
 		if f.failCreate[c.Name] {
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			w.Write([]byte(`{"message": "MCP server not reachable"}`))
@@ -215,5 +219,25 @@ func TestRunMcpTefFailure(t *testing.T) {
 	results := Run(context.Background(), newFakeTef(t, f), suiteOf("a"), ollama[:1], opts(1, 5*time.Second))
 	if r := results[0]; r.Status != "failed" || r.FailureReason != "mcp-tef: boom" {
 		t.Errorf("got %s %q", r.Status, r.FailureReason)
+	}
+}
+
+func TestRunJobRef(t *testing.T) {
+	f := &fakeTef{pollsToFinish: 1}
+	client := newFakeTef(t, f)
+	suite := suiteOf("r")
+	suite.Files[0].Cases = append(suite.Files[0].Cases, tests.Case{Name: "w", Raw: json.RawMessage(`{"name": "w-${job}"}`)})
+	results := Run(context.Background(), client, suite, ollama, opts(2, 5*time.Second))
+
+	w1, w2 := results[2], results[3]
+	if w1.JobID == w2.JobID || !strings.HasSuffix(w1.JobID, "-3") || !strings.HasSuffix(w2.JobID, "-4") {
+		t.Fatalf("job ids %q %q", w1.JobID, w2.JobID)
+	}
+	want := []string{"r", "w-" + w1.JobID, "w-" + w2.JobID}
+	if fmt.Sprint(f.created) != fmt.Sprint(want) {
+		t.Errorf("created %v, want %v", f.created, want)
+	}
+	if results[0].TestCaseID != results[1].TestCaseID || w1.TestCaseID != "case-w-"+w1.JobID || w2.TestCaseID != "case-w-"+w2.JobID {
+		t.Errorf("test case ids %q %q %q %q", results[0].TestCaseID, results[1].TestCaseID, w1.TestCaseID, w2.TestCaseID)
 	}
 }
