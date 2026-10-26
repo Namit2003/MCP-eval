@@ -1,8 +1,8 @@
 {
   "models": [
     { "provider": "openrouter", "model": "z-ai/glm-5.3", "api_key_env": "OPENROUTER_API_KEY", "temperature": 0, "timeout": 60 },
-    { "provider": "openrouter", "model": "deepseek/deepseek-v4-pro", "api_key_env": "OPENROUTER_API_KEY", "temperature": 0, "timeout": 60 },
-    { "provider": "openrouter", "model": "deepseek/deepseek-v4-flash", "api_key_env": "OPENROUTER_API_KEY", "temperature": 0, "timeout": 60 },
+    { "provider": "openrouter", "model": "deepseek/deepseek-v4-pro@preset/deepseek-mcp-eval", "api_key_env": "OPENROUTER_API_KEY", "temperature": 0, "timeout": 60 },
+    { "provider": "openrouter", "model": "deepseek/deepseek-v4-flash@preset/deepseek-mcp-eval", "api_key_env": "OPENROUTER_API_KEY", "temperature": 0, "timeout": 60 },
     { "provider": "openrouter", "model": "anthropic/claude-haiku-5.5", "api_key_env": "OPENROUTER_API_KEY", "temperature": 0, "timeout": 60 }
   ]
 }
