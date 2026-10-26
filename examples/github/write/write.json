@@ -225,7 +225,7 @@
       "teardown": [
         {
           "method": "GET",
-          "url": "https://api.github.com/search/issues?q=repo:${owner}/${repo}+in:title+%22tefrun+${job}%22",
+          "url": "https://api.github.com/search/issues?q=repo:${owner}/${repo}+is:issue+in:title+%22tefrun+${job}%22",
           "auth_env": "GITHUB_WRITE_PAT",
           "save": {
             "found": "items.0.number"
