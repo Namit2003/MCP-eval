@@ -131,12 +131,18 @@ func lookup(doc any, path string) (string, error) {
 }
 
 // runTeardown runs every teardown step, even after one fails, so as much as
-// possible is cleaned up. It ignores the run's cancellation.
+// possible is cleaned up. It ignores the run's cancellation. A step that uses
+// a variable that was never saved is skipped: whatever it would clean up was
+// never created, and the failed setup or teardown step is already reported.
 func runTeardown(ctx context.Context, steps []tests.Step, vars map[string]string) error {
 	ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), teardownTimeout)
 	defer cancel()
 	var errs []error
 	for _, s := range steps {
+		data, _ := json.Marshal(s)
+		if _, err := tests.Substitute(data, vars, nil); err != nil {
+			continue
+		}
 		errs = append(errs, runStep(ctx, s, vars))
 	}
 	return errors.Join(errs...)

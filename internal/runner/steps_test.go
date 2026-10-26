@@ -105,6 +105,23 @@ func TestRunStepRetry(t *testing.T) {
 	}
 }
 
+func TestRunTeardownSkipsUnsavedVars(t *testing.T) {
+	s := &stepServer{status: 200, body: `{"items": []}`}
+	url := newStepServer(t, s)
+	steps := []tests.Step{
+		{Method: "GET", URL: url + "/search", Save: map[string]string{"found": "items.0.number"}},
+		{Method: "PATCH", URL: url + "/issues/${found}"},
+		{Method: "DELETE", URL: url + "/branch"},
+	}
+	err := runTeardown(context.Background(), steps, map[string]string{})
+	if err == nil || strings.Contains(err.Error(), "undefined") || !strings.Contains(err.Error(), `save "found"`) {
+		t.Errorf("got %v, want only the search error", err)
+	}
+	if len(s.reqs) != 2 || !strings.HasPrefix(s.reqs[1], "DELETE /branch") {
+		t.Errorf("requests %q, want search and delete only", s.reqs)
+	}
+}
+
 func TestRunTeardownIgnoresCancel(t *testing.T) {
 	s := &stepServer{status: 200}
 	url := newStepServer(t, s)
@@ -177,8 +194,8 @@ func TestRunSetupFails(t *testing.T) {
 	if r.Status != "failed" || !strings.HasPrefix(r.FailureReason, "setup[0]: POST ") || len(f.created) != 0 {
 		t.Errorf("result %+v, created %v", r, f.created)
 	}
-	// Teardown still runs; ${issue} was never saved, so it fails and is reported.
-	if !strings.Contains(r.TeardownError, "undefined variables (set with --var): issue") {
-		t.Errorf("teardown error %q", r.TeardownError)
+	// Teardown needs ${issue}, which setup never saved, so it is skipped quietly.
+	if r.TeardownError != "" || len(s.reqs) != 1 {
+		t.Errorf("teardown error %q, %d requests, want none and only the setup request", r.TeardownError, len(s.reqs))
 	}
 }
