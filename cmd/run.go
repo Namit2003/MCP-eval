@@ -20,6 +20,7 @@ type runFlags struct {
 	inputFlags
 	parallel     int
 	timeout      time.Duration
+	jobTimeout   time.Duration
 	pollInterval time.Duration
 	out          string
 	mcpTefDir    string
@@ -34,6 +35,9 @@ func (f *runFlags) check() error {
 	}
 	if f.timeout <= 0 {
 		errs = append(errs, fmt.Errorf("--timeout must be > 0, got %s", f.timeout))
+	}
+	if f.jobTimeout <= 0 {
+		errs = append(errs, fmt.Errorf("--job-timeout must be > 0, got %s", f.jobTimeout))
 	}
 	if f.pollInterval <= 0 {
 		errs = append(errs, fmt.Errorf("--poll-interval must be > 0, got %s", f.pollInterval))
@@ -83,6 +87,7 @@ func newRunCmd() *cobra.Command {
 			results := runner.Run(cmd.Context(), teff.NewClient(srv.URL), loaded.suite, loaded.models.Models, runner.Options{
 				Parallel:     f.parallel,
 				Timeout:      f.timeout,
+				JobTimeout:   f.jobTimeout,
 				PollInterval: f.pollInterval,
 				OnDone:       term.Progress,
 			})
@@ -118,6 +123,7 @@ func newRunCmd() *cobra.Command {
 	fl := cmd.Flags()
 	fl.IntVar(&f.parallel, "parallel", 4, "max concurrent (case * model) jobs across all models")
 	fl.DurationVar(&f.timeout, "timeout", 30*time.Minute, "global deadline for the whole run")
+	fl.DurationVar(&f.jobTimeout, "job-timeout", 10*time.Minute, "deadline for each job, excluding teardown")
 	fl.DurationVar(&f.pollInterval, "poll-interval", 2*time.Second, "how often to poll mcp-tef for a test run's status")
 	fl.StringVar(&f.out, "out", "./reports", "directory for results.json, report.html and mcp-tef.log")
 	fl.StringVar(&f.mcpTefDir, "mcp-tef-dir", "./.mcp-tef", "where mcp-tef is cloned")

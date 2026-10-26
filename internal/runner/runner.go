@@ -20,6 +20,7 @@ import (
 type Options struct {
 	Parallel     int           // max jobs in flight across all models
 	Timeout      time.Duration // global deadline for the whole run
+	JobTimeout   time.Duration // deadline for each job, excluding teardown
 	PollInterval time.Duration // how often to poll a test run's status
 
 	// OnDone, if set, is called after each job finishes with the number of
@@ -113,8 +114,12 @@ func Run(ctx context.Context, client *teff.Client, suite *tests.Suite, models []
 			continue
 		}
 		g.Go(func() error {
+			// mcp-tef ignores the model timeout, so a hung run would otherwise
+			// hold its slot until the global deadline.
+			jobCtx, cancel := context.WithTimeout(ctx, opts.JobTimeout)
+			defer cancel()
 			// Each job writes only results[i], so no locking is needed.
-			runJob(ctx, client, &results[i], jobModels[i], jobCases[i], opts.PollInterval)
+			runJob(jobCtx, client, &results[i], jobModels[i], jobCases[i], opts.PollInterval)
 			finished(results[i])
 			return nil
 		})

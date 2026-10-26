@@ -98,7 +98,7 @@ func suiteOf(names ...string) *tests.Suite {
 var ollama = []config.Model{{Provider: "ollama", Model: "m1"}, {Provider: "ollama", Model: "m2"}}
 
 func opts(parallel int, timeout time.Duration) Options {
-	return Options{Parallel: parallel, Timeout: timeout, PollInterval: 5 * time.Millisecond}
+	return Options{Parallel: parallel, Timeout: timeout, JobTimeout: timeout, PollInterval: 5 * time.Millisecond}
 }
 
 func TestRunCompleted(t *testing.T) {
@@ -162,6 +162,23 @@ func TestRunGlobalTimeout(t *testing.T) {
 	for _, r := range results {
 		if r.Status != "failed" || r.FailureReason != "timeout" {
 			t.Errorf("%s/%s: got %s %q, want failed timeout", r.CaseName, r.Model, r.Status, r.FailureReason)
+		}
+	}
+}
+
+func TestRunJobTimeout(t *testing.T) {
+	f := &fakeTef{pollsToFinish: -1} // runs never finish
+	client := newFakeTef(t, f)
+	o := opts(2, 5*time.Second)
+	o.JobTimeout = 50 * time.Millisecond
+	start := time.Now()
+	results := Run(context.Background(), client, suiteOf("a"), ollama, o)
+	if elapsed := time.Since(start); elapsed > time.Second {
+		t.Errorf("run took %s, want each job stopped after 50ms", elapsed)
+	}
+	for _, r := range results {
+		if r.Status != "failed" || r.FailureReason != "timeout" {
+			t.Errorf("got %s %q, want failed timeout", r.Status, r.FailureReason)
 		}
 	}
 }

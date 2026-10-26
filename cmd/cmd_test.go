@@ -67,11 +67,11 @@ func TestPositionalArgsRejected(t *testing.T) {
 
 func TestRunFlagChecks(t *testing.T) {
 	_, err := execute(t, "run", "--tests", "x", "--models", "y",
-		"--parallel", "0", "--timeout", "0s", "--poll-interval", "-1s", "--port", "70000", "--mcp-tef-ref", "")
+		"--parallel", "0", "--timeout", "0s", "--job-timeout", "0s", "--poll-interval", "-1s", "--port", "70000", "--mcp-tef-ref", "")
 	if err == nil {
 		t.Fatal("expected an error")
 	}
-	for _, w := range []string{"--parallel must be >= 1", "--timeout must be > 0", "--poll-interval must be > 0", "--port must be between", "--mcp-tef-ref must not be empty"} {
+	for _, w := range []string{"--parallel must be >= 1", "--timeout must be > 0", "--job-timeout must be > 0", "--poll-interval must be > 0", "--port must be between", "--mcp-tef-ref must not be empty"} {
 		if !strings.Contains(err.Error(), w) {
 			t.Errorf("error %q does not contain %q", err, w)
 		}
