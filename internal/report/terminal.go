@@ -3,6 +3,7 @@ package report
 import (
 	"fmt"
 	"io"
+	"strings"
 	"time"
 
 	"github.com/charmbracelet/lipgloss"
@@ -48,7 +49,13 @@ func (t *Terminal) Progress(done, total int, r runner.Result) {
 	}
 	fmt.Fprintf(t.w, "[%d/%d] %s × %s  %s  %s\n", done, total, r.CaseName, r.Model, outcome, t.faint.Render(wall(r.WallClock)))
 	if r.TeardownError != "" {
-		fmt.Fprintln(t.w, t.red.Render("  teardown failed, clean up by hand: "+r.TeardownError))
+		// One line per failed step, rendered separately so lipgloss does not
+		// pad them to the same width.
+		prefix := "  teardown failed, clean up by hand: "
+		for _, line := range strings.Split(r.TeardownError, "\n") {
+			fmt.Fprintln(t.w, t.red.Render(prefix+line))
+			prefix = "    "
+		}
 	}
 }
 
