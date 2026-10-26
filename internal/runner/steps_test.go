@@ -118,6 +118,29 @@ func TestRunSetupTeardown(t *testing.T) {
 	}
 }
 
+func TestRunSetupSharedByModels(t *testing.T) {
+	f := &fakeTef{pollsToFinish: 1}
+	client := newFakeTef(t, f)
+	s := &stepServer{status: 200, body: `{"number": 5}`}
+	c := stepCase("w", newStepServer(t, s))
+	// Indented like a real file, so the filled-in body fits in its memory.
+	c.Setup[0].Body = json.RawMessage(`{
+        "title": "tefrun ${job}"
+      }`)
+	models := append(ollama, ollama...)
+	suite := &tests.Suite{Files: []tests.File{{Path: "w.json", Cases: []tests.Case{c}}}}
+	results := Run(context.Background(), client, suite, models, opts(2, 5*time.Second))
+
+	for _, r := range results {
+		if r.Status != "completed" {
+			t.Errorf("job %s: %s %s", r.JobID, r.Status, r.FailureReason)
+		}
+	}
+	if got := string(c.Setup[0].Body); !strings.Contains(got, `"tefrun ${job}"`) {
+		t.Errorf("case body changed to %q", got)
+	}
+}
+
 func TestRunSetupFails(t *testing.T) {
 	f := &fakeTef{pollsToFinish: 1}
 	client := newFakeTef(t, f)

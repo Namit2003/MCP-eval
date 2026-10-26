@@ -28,6 +28,9 @@ func runStep(ctx context.Context, s tests.Step, vars map[string]string) error {
 	if err != nil {
 		return err
 	}
+	// Decode into a new Step: s shares Body and Save with the case, which
+	// other jobs use too.
+	s = tests.Step{}
 	if err := json.Unmarshal(data, &s); err != nil {
 		return err
 	}
