@@ -14,8 +14,10 @@ It works with any MCP server reachable over HTTP. Servers, test cases, and setup
 
 ```sh
 git clone https://github.com/Namit2003/mcp-eval && cd mcp-eval
-go build -o bin/tefrun .
+make build   # or: go build -o bin/tefrun .
 ```
+
+`make test` runs the tests and `make lint` runs `go vet` plus a gofmt check.
 
 ## Quick start
 
