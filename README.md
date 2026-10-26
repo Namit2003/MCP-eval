@@ -168,7 +168,7 @@ Each job (one case on one model) is classified by mcp-tef:
    tefrun run --tests examples/github/write --models examples/github/model.config.json --var owner=<you> --var repo=<sandbox> --parallel 2 --out reports/github-write
    ```
 
-A sample report is in `examples/github/sample-report/`. Its write cases were re-run after a setup bug fix and merged in; see `metadata.flags.note` in `results.json`.
+A sample report is in `examples/github/sample-report/`.
 
 ## CI
 
