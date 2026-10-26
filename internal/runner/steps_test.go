@@ -79,6 +79,32 @@ func TestRunStepErrors(t *testing.T) {
 	}
 }
 
+func TestRunStepRetry(t *testing.T) {
+	retryDelay = time.Millisecond
+	t.Cleanup(func() { retryDelay = 2 * time.Second })
+	calls := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls++
+		if calls < 3 {
+			io.WriteString(w, `{"items": []}`) // not indexed yet
+			return
+		}
+		io.WriteString(w, `{"items": [{"number": 7}]}`)
+	}))
+	t.Cleanup(srv.Close)
+	step := tests.Step{Method: "GET", URL: srv.URL, Save: map[string]string{"found": "items.0.number"}}
+
+	if err := runStep(context.Background(), step, map[string]string{}); err == nil || calls != 1 {
+		t.Errorf("without retry: err %v after %d calls, want an error after 1", err, calls)
+	}
+	calls = 0
+	step.Retry = 3
+	vars := map[string]string{}
+	if err := runStep(context.Background(), step, vars); err != nil || calls != 3 || vars["found"] != "7" {
+		t.Errorf("with retry: err %v, %d calls, vars %v", err, calls, vars)
+	}
+}
+
 func TestRunTeardownIgnoresCancel(t *testing.T) {
 	s := &stepServer{status: 200}
 	url := newStepServer(t, s)

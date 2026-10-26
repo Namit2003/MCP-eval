@@ -20,8 +20,12 @@ import (
 // the run's deadline passes or Ctrl+C cancels it.
 const teardownTimeout = 30 * time.Second
 
+// retryDelay is the pause between attempts of a step with retry set.
+var retryDelay = 2 * time.Second
+
 // runStep fills ${name} references in s from vars, sends the request, and
-// adds any values the step saves to vars.
+// adds any values the step saves to vars. A failed step is tried again up to
+// s.Retry more times.
 func runStep(ctx context.Context, s tests.Step, vars map[string]string) error {
 	data, _ := json.Marshal(s)
 	data, err := tests.Substitute(data, vars, nil)
@@ -34,7 +38,21 @@ func runStep(ctx context.Context, s tests.Step, vars map[string]string) error {
 	if err := json.Unmarshal(data, &s); err != nil {
 		return err
 	}
+	for attempt := 0; ; attempt++ {
+		err := send(ctx, s, vars)
+		if err == nil || attempt >= s.Retry {
+			return err
+		}
+		select {
+		case <-time.After(retryDelay):
+		case <-ctx.Done():
+			return err
+		}
+	}
+}
 
+// send makes one attempt of a filled-in step.
+func send(ctx context.Context, s tests.Step, vars map[string]string) error {
 	var body io.Reader
 	if len(s.Body) > 0 {
 		body = bytes.NewReader(s.Body)

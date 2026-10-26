@@ -43,7 +43,7 @@ func TestParseSteps(t *testing.T) {
 
 func TestParseStepsInvalid(t *testing.T) {
 	data := fileJSON(withSteps(
-		`[{"url": "u", "save": {"job": "a", "x": ""}}]`,
+		`[{"url": "u", "save": {"job": "a", "x": ""}, "retry": -1}]`,
 		`[{"method": "GET"}]`,
 	))
 	_, err := Parse([]byte(data))
@@ -54,6 +54,7 @@ func TestParseStepsInvalid(t *testing.T) {
 		"setup[0]: method is required",
 		`setup[0]: save name "job" must be`,
 		`setup[0]: save "x" needs a response path`,
+		"setup[0]: retry must be >= 0",
 		"teardown[0]: url is required",
 	} {
 		if !strings.Contains(err.Error(), w) {

@@ -229,7 +229,8 @@
           "auth_env": "GITHUB_WRITE_PAT",
           "save": {
             "found": "items.0.number"
-          }
+          },
+          "retry": 5
         },
         {
           "method": "PATCH",

@@ -13,7 +13,8 @@ type Step struct {
 	URL     string            `json:"url"`
 	AuthEnv string            `json:"auth_env,omitempty"` // env var holding a bearer token
 	Body    json.RawMessage   `json:"body,omitempty"`
-	Save    map[string]string `json:"save,omitempty"` // variable name -> dot path in the JSON response, such as items.0.number
+	Save    map[string]string `json:"save,omitempty"`  // variable name -> dot path in the JSON response, such as items.0.number
+	Retry   int               `json:"retry,omitempty"` // extra attempts if the step fails
 }
 
 // UnmarshalJSON rejects unknown fields so a typo such as "sav" is not
@@ -34,6 +35,9 @@ func stepProblems(kind string, steps []Step) []string {
 		}
 		if strings.TrimSpace(s.URL) == "" {
 			out = append(out, where+": url is required")
+		}
+		if s.Retry < 0 {
+			out = append(out, where+": retry must be >= 0")
 		}
 		for name, path := range s.Save {
 			if !varName.MatchString(name) || name == "job" {
