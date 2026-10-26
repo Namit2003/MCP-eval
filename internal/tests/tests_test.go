@@ -127,7 +127,7 @@ func TestLoadCollectsErrorsFromAllFiles(t *testing.T) {
 		"bad1.json": fileJSON(`{"name": "x"}`),
 		"bad2.json": `{`,
 	})
-	_, err := Load([]string{root})
+	_, err := Load([]string{root}, nil)
 	if err == nil {
 		t.Fatal("expected an error")
 	}
@@ -150,7 +150,7 @@ func TestLoadSuite(t *testing.T) {
 		"a.json":     fileJSON(caseJSON("a1", "q", "t"), caseJSON("a2", "q", "")),
 		"sub/b.json": fileJSON(caseJSON("b1", "q", "t")),
 	})
-	s, err := Load([]string{root})
+	s, err := Load([]string{root}, nil)
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}

@@ -56,8 +56,8 @@ func (s *Suite) NumCases() int {
 }
 
 // Load discovers files from patterns and loads them all, collecting every
-// problem across every file before returning.
-func Load(patterns []string) (*Suite, error) {
+// problem across every file before returning. vars fill ${name} references.
+func Load(patterns []string, vars map[string]string) (*Suite, error) {
 	paths, err := Discover(patterns)
 	if err != nil {
 		return nil, err
@@ -65,7 +65,7 @@ func Load(patterns []string) (*Suite, error) {
 	var s Suite
 	var errs []error
 	for _, p := range paths {
-		f, err := LoadFile(p)
+		f, err := LoadFile(p, vars)
 		if err != nil {
 			errs = append(errs, err)
 			continue
@@ -78,11 +78,16 @@ func Load(patterns []string) (*Suite, error) {
 	return &s, nil
 }
 
-// LoadFile reads and validates one test file.
-func LoadFile(path string) (*File, error) {
+// LoadFile reads one test file, fills its ${name} references from vars,
+// and validates it.
+func LoadFile(path string, vars map[string]string) (*File, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
+	}
+	data, err = substitute(data, vars)
+	if err != nil {
+		return nil, inputerr.Prefix(path, err)
 	}
 	cases, err := Parse(data)
 	if err != nil {

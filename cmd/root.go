@@ -44,11 +44,13 @@ func newRootCmd() *cobra.Command {
 type inputFlags struct {
 	tests  []string
 	models string
+	vars   []string
 }
 
 func (f *inputFlags) register(cmd *cobra.Command) {
 	cmd.Flags().StringArrayVar(&f.tests, "tests", nil, `test files, directories or globs ("**" supported); repeatable`)
 	cmd.Flags().StringVar(&f.models, "models", "", "path to model.config.json")
+	cmd.Flags().StringArrayVar(&f.vars, "var", nil, "set ${name} in test files, as name=value; repeatable")
 	_ = cmd.MarkFlagRequired("tests")
 	_ = cmd.MarkFlagRequired("models")
 }
@@ -74,7 +76,11 @@ func (f *inputFlags) load() (*inputs, error) {
 	} else if err := cfg.CheckAPIKeys(os.LookupEnv); err != nil {
 		problems = append(problems, err.Error())
 	}
-	suite, err := tests.Load(f.tests)
+	var suite *tests.Suite
+	vars, err := tests.ParseVars(f.vars)
+	if err == nil {
+		suite, err = tests.Load(f.tests, vars)
+	}
 	if err != nil {
 		problems = append(problems, err.Error())
 	}
