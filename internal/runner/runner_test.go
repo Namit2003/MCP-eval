@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"slices"
 	"strings"
 	"sync"
 	"testing"
@@ -234,6 +235,7 @@ func TestRunJobRef(t *testing.T) {
 		t.Fatalf("job ids %q %q", w1.JobID, w2.JobID)
 	}
 	want := []string{"r", "w-" + w1.JobID, "w-" + w2.JobID}
+	slices.Sort(f.created) // per-job cases are created inside parallel jobs
 	if fmt.Sprint(f.created) != fmt.Sprint(want) {
 		t.Errorf("created %v, want %v", f.created, want)
 	}

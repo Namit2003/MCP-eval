@@ -34,10 +34,10 @@ func ParseVars(flags []string) (map[string]string, error) {
 	return vars, nil
 }
 
-// substitute replaces every ${name} in data with its value, escaped for use
+// Substitute replaces every ${name} in data with its value, escaped for use
 // inside a JSON string. Names in keep are filled later, per job, and left as
 // they are. Any other name without a value is an error.
-func substitute(data []byte, vars map[string]string, keep map[string]bool) ([]byte, error) {
+func Substitute(data []byte, vars map[string]string, keep map[string]bool) ([]byte, error) {
 	var missing []string
 	out := varRef.ReplaceAllFunc(data, func(ref []byte) []byte {
 		name := string(ref[2 : len(ref)-1])

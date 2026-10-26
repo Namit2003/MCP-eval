@@ -47,6 +47,9 @@ func (t *Terminal) Progress(done, total int, r runner.Result) {
 		outcome = t.red.Render(r.Status + " " + r.FailureReason)
 	}
 	fmt.Fprintf(t.w, "[%d/%d] %s × %s  %s  %s\n", done, total, r.CaseName, r.Model, outcome, t.faint.Render(wall(r.WallClock)))
+	if r.TeardownError != "" {
+		fmt.Fprintln(t.w, t.red.Render("  teardown failed, clean up by hand: "+r.TeardownError))
+	}
 }
 
 // Results prints one table per model followed by its summary.

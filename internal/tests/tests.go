@@ -95,7 +95,7 @@ func LoadFile(path string, vars map[string]string) (*File, error) {
 		}
 	}
 	keep["job"] = true
-	data, err = substitute(data, vars, keep)
+	data, err = Substitute(data, vars, keep)
 	if err != nil {
 		return nil, inputerr.Prefix(path, err)
 	}

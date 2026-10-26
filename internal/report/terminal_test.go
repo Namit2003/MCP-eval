@@ -36,6 +36,18 @@ func TestTerminalNeverRan(t *testing.T) {
 	}
 }
 
+func TestTerminalTeardownWarning(t *testing.T) {
+	var buf bytes.Buffer
+	r := completed("ollama/m", "TP", 100, time.Second)
+	r.CaseName = "c"
+	r.TeardownError = "DELETE /x: 404 Not Found"
+	NewTerminal(&buf).Progress(1, 1, r)
+	want := "[1/1] c × ollama/m  completed TP  1.00s\n  teardown failed, clean up by hand: DELETE /x: 404 Not Found\n"
+	if buf.String() != want {
+		t.Errorf("got %q, want %q", buf.String(), want)
+	}
+}
+
 func TestTerminalResults(t *testing.T) {
 	long := failed("b", time.Second)
 	long.CaseName = "case-long"
