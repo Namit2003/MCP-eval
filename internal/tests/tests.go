@@ -28,7 +28,8 @@ type File struct {
 	Cases []Case
 }
 
-// Case is one test case. Raw is the case exactly as written in the file.
+// Case is one test case. Raw is the case exactly as written in the file,
+// minus setup and teardown.
 type Case struct {
 	Index                  int             `json:"-"`
 	Name                   string          `json:"name"`
@@ -36,6 +37,8 @@ type Case struct {
 	ExpectedToolCalls      []ToolCall      `json:"expected_tool_calls"`
 	OrderDependentMatching bool            `json:"order_dependent_matching"`
 	AvailableMCPServers    []string        `json:"available_mcp_servers"`
+	Setup                  []Step          `json:"setup"`
+	Teardown               []Step          `json:"teardown"`
 	Raw                    json.RawMessage `json:"-"`
 }
 
@@ -85,7 +88,14 @@ func LoadFile(path string, vars map[string]string) (*File, error) {
 	if err != nil {
 		return nil, err
 	}
-	data, err = substitute(data, vars)
+	keep := saveNames(data)
+	for name := range keep {
+		if _, ok := vars[name]; ok {
+			return nil, inputerr.Prefix(path, fmt.Errorf("variable %q is set by --var and also saved by setup", name))
+		}
+	}
+	keep["job"] = true
+	data, err = substitute(data, vars, keep)
 	if err != nil {
 		return nil, inputerr.Prefix(path, err)
 	}
@@ -126,6 +136,13 @@ func Parse(data []byte) ([]Case, error) {
 		}
 		c.Index = i
 		c.Raw = raw
+		if len(c.Setup) > 0 || len(c.Teardown) > 0 {
+			var err error
+			if c.Raw, err = withoutSteps(raw); err != nil {
+				errs = append(errs, fmt.Errorf("test_cases[%d]: %w", i, err))
+				continue
+			}
+		}
 		for _, problem := range c.problems() {
 			errs = append(errs, fmt.Errorf("test_cases[%d]%s: %s", i, c.nameSuffix(), problem))
 		}
@@ -171,6 +188,8 @@ func (c *Case) problems() []string {
 		}
 		available[u] = true
 	}
+	out = append(out, stepProblems("setup", c.Setup)...)
+	out = append(out, stepProblems("teardown", c.Teardown)...)
 	for j, tc := range c.ExpectedToolCalls {
 		if strings.TrimSpace(tc.ToolName) == "" {
 			out = append(out, fmt.Sprintf("expected_tool_calls[%d]: tool_name is required", j))
