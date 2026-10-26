@@ -91,7 +91,7 @@ func LoadFile(path string, vars map[string]string) (*File, error) {
 	keep := saveNames(data)
 	for name := range keep {
 		if _, ok := vars[name]; ok {
-			return nil, inputerr.Prefix(path, fmt.Errorf("variable %q is set by --var and also saved by setup", name))
+			return nil, inputerr.Prefix(path, fmt.Errorf("variable %q is set by --var and also saved by a step", name))
 		}
 	}
 	keep["job"] = true

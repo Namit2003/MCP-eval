@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -81,15 +82,20 @@ func runStep(ctx context.Context, s tests.Step, vars map[string]string) error {
 	return nil
 }
 
-// lookup follows a dot path such as "data.id" through JSON objects and
-// returns the value as text.
+// lookup follows a dot path such as "data.id" or "items.0.number" through
+// JSON objects and arrays and returns the value as text.
 func lookup(doc any, path string) (string, error) {
 	for _, key := range strings.Split(path, ".") {
-		obj, ok := doc.(map[string]any)
-		if !ok {
-			return "", fmt.Errorf("path %q not found in response", path)
+		found := false
+		switch v := doc.(type) {
+		case map[string]any:
+			doc, found = v[key]
+		case []any:
+			if i, err := strconv.Atoi(key); err == nil && i >= 0 && i < len(v) {
+				doc, found = v[i], true
+			}
 		}
-		if doc, ok = obj[key]; !ok {
+		if !found {
 			return "", fmt.Errorf("path %q not found in response", path)
 		}
 	}

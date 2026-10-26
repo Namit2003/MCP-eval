@@ -38,12 +38,12 @@ func newStepServer(t *testing.T, s *stepServer) string {
 
 func TestRunStep(t *testing.T) {
 	t.Setenv("TEFRUN_TEST_PAT", "secret")
-	s := &stepServer{status: 201, body: `{"number": 12, "data": {"id": "abc", "ok": true}}`}
+	s := &stepServer{status: 201, body: `{"number": 12, "data": {"id": "abc", "ok": true}, "items": [{"number": 9}]}`}
 	url := newStepServer(t, s)
 	step := tests.Step{
 		Method: "POST", URL: url + "/issues/${job}", AuthEnv: "TEFRUN_TEST_PAT",
 		Body: json.RawMessage(`{"title": "t ${job}"}`),
-		Save: map[string]string{"issue": "number", "id": "data.id", "ok": "data.ok"},
+		Save: map[string]string{"issue": "number", "id": "data.id", "ok": "data.ok", "first": "items.0.number"},
 	}
 	vars := map[string]string{"job": "7-1"}
 	if err := runStep(context.Background(), step, vars); err != nil {
@@ -52,7 +52,7 @@ func TestRunStep(t *testing.T) {
 	if want := `POST /issues/7-1 Bearer secret application/json {"title":"t 7-1"}`; s.reqs[0] != want {
 		t.Errorf("request %q, want %q", s.reqs[0], want)
 	}
-	if vars["issue"] != "12" || vars["id"] != "abc" || vars["ok"] != "true" {
+	if vars["issue"] != "12" || vars["id"] != "abc" || vars["ok"] != "true" || vars["first"] != "9" {
 		t.Errorf("vars %v", vars)
 	}
 }
@@ -70,10 +70,12 @@ func TestRunStepErrors(t *testing.T) {
 		t.Errorf("missing token: got %v", err)
 	}
 
-	ok := newStepServer(t, &stepServer{status: 200, body: `{"a": 1}`})
-	err = runStep(context.Background(), tests.Step{Method: "GET", URL: ok, Save: map[string]string{"x": "a.b"}}, map[string]string{})
-	if err == nil || !strings.Contains(err.Error(), `save "x": path "a.b" not found`) {
-		t.Errorf("missing path: got %v", err)
+	ok := newStepServer(t, &stepServer{status: 200, body: `{"a": 1, "items": []}`})
+	for _, path := range []string{"a.b", "items.0.number", "items.x"} {
+		err = runStep(context.Background(), tests.Step{Method: "GET", URL: ok, Save: map[string]string{"x": path}}, map[string]string{})
+		if err == nil || !strings.Contains(err.Error(), `save "x": path "`+path+`" not found`) {
+			t.Errorf("missing path %q: got %v", path, err)
+		}
 	}
 }
 

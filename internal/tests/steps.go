@@ -13,7 +13,7 @@ type Step struct {
 	URL     string            `json:"url"`
 	AuthEnv string            `json:"auth_env,omitempty"` // env var holding a bearer token
 	Body    json.RawMessage   `json:"body,omitempty"`
-	Save    map[string]string `json:"save,omitempty"` // variable name -> dot path in the JSON response
+	Save    map[string]string `json:"save,omitempty"` // variable name -> dot path in the JSON response, such as items.0.number
 }
 
 // UnmarshalJSON rejects unknown fields so a typo such as "sav" is not
@@ -35,9 +35,6 @@ func stepProblems(kind string, steps []Step) []string {
 		if strings.TrimSpace(s.URL) == "" {
 			out = append(out, where+": url is required")
 		}
-		if kind == "teardown" && len(s.Save) > 0 {
-			out = append(out, where+": save is only allowed in setup")
-		}
 		for name, path := range s.Save {
 			if !varName.MatchString(name) || name == "job" {
 				out = append(out, fmt.Sprintf("%s: save name %q must be letters, digits and _, and not job", where, name))
@@ -50,20 +47,22 @@ func stepProblems(kind string, steps []Step) []string {
 	return out
 }
 
-// saveNames returns every variable saved by a setup step in a test file.
-// Invalid JSON returns nothing; Parse reports it later.
+// saveNames returns every variable saved by a setup or teardown step in a
+// test file. Invalid JSON returns nothing; Parse reports it later.
 func saveNames(data []byte) map[string]bool {
+	type step struct {
+		Save map[string]string `json:"save"`
+	}
 	var top struct {
 		TestCases []struct {
-			Setup []struct {
-				Save map[string]string `json:"save"`
-			} `json:"setup"`
+			Setup    []step `json:"setup"`
+			Teardown []step `json:"teardown"`
 		} `json:"test_cases"`
 	}
 	_ = json.Unmarshal(data, &top)
 	names := make(map[string]bool)
 	for _, c := range top.TestCases {
-		for _, s := range c.Setup {
+		for _, s := range append(c.Setup, c.Teardown...) {
 			for name := range s.Save {
 				names[name] = true
 			}

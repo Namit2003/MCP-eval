@@ -44,7 +44,7 @@ func TestParseSteps(t *testing.T) {
 func TestParseStepsInvalid(t *testing.T) {
 	data := fileJSON(withSteps(
 		`[{"url": "u", "save": {"job": "a", "x": ""}}]`,
-		`[{"method": "GET", "save": {"y": "a"}}]`,
+		`[{"method": "GET"}]`,
 	))
 	_, err := Parse([]byte(data))
 	if err == nil {
@@ -55,7 +55,6 @@ func TestParseStepsInvalid(t *testing.T) {
 		`setup[0]: save name "job" must be`,
 		`setup[0]: save "x" needs a response path`,
 		"teardown[0]: url is required",
-		"teardown[0]: save is only allowed in setup",
 	} {
 		if !strings.Contains(err.Error(), w) {
 			t.Errorf("error %q does not contain %q", err, w)
@@ -70,7 +69,8 @@ func TestParseStepsInvalid(t *testing.T) {
 
 func TestLoadSavedVars(t *testing.T) {
 	setup := `[{"method": "POST", "url": "u", "save": {"issue": "number"}}]`
-	root := writeTree(t, map[string]string{"a.json": fileJSON(withSteps(setup, `[]`))})
+	teardown := `[{"method": "GET", "url": "u", "save": {"found": "items.0.number"}}, {"method": "PATCH", "url": "u/${found}"}]`
+	root := writeTree(t, map[string]string{"a.json": fileJSON(withSteps(setup, teardown))})
 	s, err := Load([]string{root}, nil)
 	if err != nil {
 		t.Fatal(err)
@@ -80,7 +80,7 @@ func TestLoadSavedVars(t *testing.T) {
 	}
 
 	_, err = Load([]string{root}, map[string]string{"issue": "1"})
-	want := filepath.Join(root, "a.json") + `: variable "issue" is set by --var and also saved by setup`
+	want := filepath.Join(root, "a.json") + `: variable "issue" is set by --var and also saved by a step`
 	if err == nil || err.Error() != want {
 		t.Errorf("got %v, want %q", err, want)
 	}
