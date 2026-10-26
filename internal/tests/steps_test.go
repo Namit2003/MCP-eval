@@ -86,3 +86,20 @@ func TestLoadSavedVars(t *testing.T) {
 		t.Errorf("got %v, want %q", err, want)
 	}
 }
+
+func TestCheckAuthEnvs(t *testing.T) {
+	step := func(env string) []Step { return []Step{{Method: "GET", URL: "u", AuthEnv: env}} }
+	s := &Suite{Files: []File{{Path: "w.json", Cases: []Case{
+		{Setup: step("A"), Teardown: step("B")},
+		{Setup: step("A"), Teardown: step("SET")},
+		{Setup: []Step{{Method: "GET", URL: "u"}}},
+	}}}}
+	lookup := func(name string) (string, bool) {
+		v, ok := map[string]string{"SET": "x", "B": " "}[name]
+		return v, ok
+	}
+	want := "w.json: environment variable A is not set (used by auth_env)\nw.json: environment variable B is not set (used by auth_env)"
+	if err := s.CheckAuthEnvs(lookup); err == nil || err.Error() != want {
+		t.Errorf("got %v, want %q", err, want)
+	}
+}

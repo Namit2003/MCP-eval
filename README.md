@@ -26,7 +26,7 @@ tefrun validate --tests 'examples/evals/**/*.json' --models examples/model.confi
 tefrun run      --tests 'examples/evals/**/*.json' --models examples/model.config.json --out reports
 ```
 
-`validate` checks every file and API key without running anything. `run` writes `results.json`, `report.html` and `mcp-tef.log` to `--out`. Each run starts with a fresh mcp-tef database.
+`validate` checks every file, model API key and step `auth_env` without running anything. `run` writes `results.json`, `report.html` and `mcp-tef.log` to `--out`. Each run starts with a fresh mcp-tef database.
 
 ## File formats
 
@@ -66,7 +66,7 @@ tefrun adds these, all optional:
 
 - **Variables:** `${name}` inside any string is filled from `--var name=value`. An undefined variable fails loading.
 - **`${job}`:** a value unique to each job (`<run start>-<job number>`). Use it to name things a job creates, so parallel jobs don't collide.
-- **`setup` / `teardown`:** HTTP steps run before and after each job. Teardown always runs, even after a failure or Ctrl+C. Both are removed before the case is sent to mcp-tef.
+- **`setup` / `teardown`:** HTTP steps run before and after each job. Teardown always runs, even after a failure or Ctrl+C. It skips any step that uses a variable that was never saved, since that thing was never created. Both are removed before the case is sent to mcp-tef.
 
 ```json
 "setup": [

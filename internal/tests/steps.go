@@ -3,7 +3,10 @@ package tests
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"maps"
+	"slices"
 	"strings"
 )
 
@@ -85,4 +88,26 @@ func withoutSteps(raw json.RawMessage) (json.RawMessage, error) {
 	delete(fields, "setup")
 	delete(fields, "teardown")
 	return json.Marshal(fields)
+}
+
+// CheckAuthEnvs reports every auth_env that is unset or blank, once per file.
+func (s *Suite) CheckAuthEnvs(lookup func(string) (string, bool)) error {
+	var errs []error
+	for _, f := range s.Files {
+		missing := make(map[string]bool)
+		for _, c := range f.Cases {
+			for _, st := range append(c.Setup, c.Teardown...) {
+				if st.AuthEnv == "" {
+					continue
+				}
+				if v, ok := lookup(st.AuthEnv); !ok || strings.TrimSpace(v) == "" {
+					missing[st.AuthEnv] = true
+				}
+			}
+		}
+		for _, name := range slices.Sorted(maps.Keys(missing)) {
+			errs = append(errs, fmt.Errorf("%s: environment variable %s is not set (used by auth_env)", f.Path, name))
+		}
+	}
+	return errors.Join(errs...)
 }

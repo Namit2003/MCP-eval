@@ -81,6 +81,9 @@ func (f *inputFlags) load() (*inputs, error) {
 	if err == nil {
 		suite, err = tests.Load(f.tests, vars)
 	}
+	if err == nil {
+		err = suite.CheckAuthEnvs(os.LookupEnv)
+	}
 	if err != nil {
 		problems = append(problems, err.Error())
 	}
